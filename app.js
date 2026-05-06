@@ -16,13 +16,20 @@ let state = {
 /* ═══════════════════════════════════════
    I18N
 ═══════════════════════════════════════ */
+const i18n = {
+  pt: {
+    kb: [],
+    def: 'Não entendi'
+  }
+};
+
 function t(key) {
   return (i18n[state.lang] || i18n.pt)[key] || key;
 }
 
 function setLang(lang) {
   state.lang = lang;
-  state.fetched = {}; // força reload
+  state.fetched = {};
 }
 
 /* ═══════════════════════════════════════
@@ -36,7 +43,8 @@ async function apiFetch(endpoint, timeout = 8000) {
     if (!res.ok) throw new Error('fail');
     const data = await res.json();
     return data.data || data || [];
-  } catch {
+  } catch (e) {
+    console.error('API Error:', e);
     return null;
   }
 }
@@ -55,129 +63,30 @@ async function fetchNewsFallback() {
 }
 
 /* ═══════════════════════════════════════
-   TABS LOADER
+   RENDER FUNCTIONS
 ═══════════════════════════════════════ */
-async function loadTab(tab, force = false) {
-  if (state.fetched[tab] &&!force) {
-    return renderTab(tab, state.cache[tab]);
-  }
-
-  showLoading();
-
-  let data = [];
-
-  switch (tab) {
-    case 'news':
-      data = await fetchNews();
-      break;
-    case 'presales':
-      data = await apiFetch('presales');
-      break;
-    case 'alpha':
-      data = await apiFetch('alpha');
-      break;
-    case 'airdrops':
-      data = await apiFetch('airdrops');
-      break;
-    case 'sponsors':
-      data = await apiFetch('sponsors');
-      break;
-  }
-
-  state.cache[tab] = data;
-  state.fetched[tab] = true;
-
-  renderTab(tab, data);
-}
-
-/* ═══════════════════════════════════════
-   RENDER CONTROLLER
-═══════════════════════════════════════ */
-function renderTab(tab, data) {
-  const map = {
-    news: renderNews,
-    presales: renderPresales,
-    alpha: renderAlpha,
-    airdrops: renderAirdrops,
-    sponsors: renderSponsors
-  };
-
-  map[tab]?.(data);
-}
-
-/* ═══════════════════════════════════════
-   MEMECOINS
-═══════════════════════════════════════ */
-async function loadMemecoins() {
-  if (!state.memeData.length) {
-    state.memeData = FALLBACK;
-    renderMemes(state.memeData);
-  }
-
-  try {
-    const res = await fetch('https://api.dexscreener.com/token-boosts/latest/v1');
-    const boosts = await res.json();
-
-    const pairs = boosts.slice(0, 10);
-
-    if (pairs.length) {
-      state.memeData = pairs;
-      renderMemes(pairs);
-    }
-
-  } catch {
-    // fallback mantém
+function showLoading() {
+  const container = document.querySelector('#news-container') ||
+                   document.querySelector('.news-list') ||
+                   document.querySelector('main');
+  if (container) {
+    container.innerHTML = '<div style="padding:20px;text-align:center">Carregando notícias...</div>';
   }
 }
 
-/* ═══════════════════════════════════════
-   SEARCH
-═══════════════════════════════════════ */
-let searchTimeout;
+function renderNews(data) {
+  const container = document.querySelector('#news-container') ||
+                   document.querySelector('.news-list') ||
+                   document.querySelector('main');
+  if (!container) return;
 
-function onSearch(q) {
-  clearTimeout(searchTimeout);
-
-  if (q.length < 2) return;
-
-  searchTimeout = setTimeout(async () => {
-    const res = await fetch(
-      `https://api.dexscreener.com/latest/dex/search?q=${q}`
-    );
-
-    const data = await res.json();
-    renderSearch(data.pairs || []);
-  }, 400);
-}
-
-/* ═══════════════════════════════════════
-   CHATBOT
-═══════════════════════════════════════ */
-function getBotReply(msg) {
-  const kb = (i18n[state.lang] || i18n.pt).kb;
-
-  for (const item of kb) {
-    if (item.k.some(k => msg.toLowerCase().includes(k))) {
-      return item.r;
-    }
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div style="padding:20px;text-align:center">Nenhuma notícia encontrada</div>';
+    return;
   }
 
-  return (i18n[state.lang] || i18n.pt).def;
-}
-
-/* ═══════════════════════════════════════
-   UTILS
-═══════════════════════════════════════ */
-const fmt = n =>
- !n? '—' :
-  n >= 1e9? '$' + (n/1e9).toFixed(2)+'B' :
-  n >= 1e6? '$' + (n/1e6).toFixed(2)+'M' :
-  n >= 1e3? '$' + (n/1e3).toFixed(2)+'K' :
-  '$' + n.toFixed(4);
-
-/* ═══════════════════════════════════════
-   INIT
-═══════════════════════════════════════ */
-setLang('pt');
-loadMemecoins();
-setInterval(loadMemecoins, 30000);
+  container.innerHTML = data.map(news => `
+    <div class="news-card" style="border:1px solid #333;padding:15px;margin:10px;border-radius:8px">
+      <a href="${news.url}" target="_blank" style="text-decoration:none;color:inherit">
+        <h3 style="margin:0 0 8px 0;font-size:16px">${news.title}</h3>
+        <p style="margin:0 0 8px 0;font-size:14px;opacity:
