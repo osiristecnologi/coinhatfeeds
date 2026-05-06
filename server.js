@@ -1,4 +1,10 @@
-// ─────────────────────────────────────────────
+git rm --cached src/services/presalesService.js
+git commit -m "remove cache"
+git push
+
+git add src/services/presalesService.js
+git commit -m "add with correct case"
+git push
 //  CoinHatFeeds · Backend Server
 //  Node.js + Express
 // ─────────────────────────────────────────────
