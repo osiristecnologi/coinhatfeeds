@@ -1,9 +1,6 @@
-// server.js
+// backend/server.js
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-
-const presalesRouter = require('./routes/presales');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,26 +9,53 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Frontend estático
-app.use(express.static(path.join(__dirname, 'frontend')));
-
-// API routes
-app.use('/api/presales', presalesRouter);
+// API Routes - só descomenta se o arquivo existir
+app.use('/api/presales', require('./routes/presales'));
+app.use('/api/news', require('./routes/news'));
+app.use('/api/sponsors', require('./routes/sponsors'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'Server is running'
+  res.json({ 
+    status: 'ok', 
+    message: 'Coinhat API is running',
+    timestamp: new Date().toISOString()
   });
 });
 
-// SPA fallback (sempre por último)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend/index.html'));
+// Rota raiz pra teste
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Coinhat Feeds API',
+    endpoints: [
+      '/api/health',
+      '/api/news',
+      '/api/sponsors', 
+      '/api/presales'
+    ]
+  });
 });
 
-// Start server
+// Handler pra rota não encontrada
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    error: 'Not Found',
+    message: `Rota ${req.originalUrl} não existe`
+  });
+});
+
+// Start server - OBRIGATÓRIO usar process.env.PORT no Render
 app.listen(PORT, () => {
   console.log(`✅ Server rodando na porta ${PORT}`);
+});
+
+// Captura erro pra aparecer no log do Render
+process.on('uncaughtException', (err) => {
+  console.error('ERRO FATAL:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('PROMISE REJEITADA:', err);
+  process.exit(1);
 });
