@@ -1,10 +1,20 @@
-git rm --cached src/services/presalesService.js
-git commit -m "remove cache"
-git push
+const fs = require('fs');
+const path = require('path');
+console.log('=== DEBUG RENDER ===');
+console.log('PWD:', process.cwd());
+console.log('DIRNAME:', __dirname);
+try {
+  console.log('CONTEUDO DE SRC:', fs.readdirSync(__dirname));
+  console.log('CONTEUDO DE SERVICES:', fs.readdirSync(path.join(__dirname, 'services')));
+  console.log('EXISTE O ARQUIVO?', fs.existsSync(path.join(__dirname, 'services/presalesService.js')));
+} catch (e) {
+  console.log('ERRO NO DEBUG:', e.message);
+}
+console.log('=== FIM DEBUG ===');
 
-git add src/services/presalesService.js
-git commit -m "add with correct case"
-git push
+const express = require('express');
+const presalesRoutes = require('./routes/presales'); // essa linha só depois do debug
+// resto do código...
 //  CoinHatFeeds · Backend Server
 //  Node.js + Express
 // ─────────────────────────────────────────────
