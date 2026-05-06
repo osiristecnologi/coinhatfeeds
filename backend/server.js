@@ -12,7 +12,7 @@ app.use(express.json());
 // API Routes - só descomenta se o arquivo existir
 // app.use('/api/presales', require('./routes/presales'));
 app.use('/api/news', require('./routes/news'));
-app.use('/api/sponsors', require('./routes/sponsors'));
+// app.use('/api/sponsors', require('./routes/sponsors'));
 
 // Health check
 app.get('/api/health', (req, res) => {
