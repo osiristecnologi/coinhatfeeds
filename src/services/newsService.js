@@ -3,15 +3,19 @@
 //  Notícias cripto (API pública + fallback + cache)
 // ─────────────────────────────────────────────
 
-const fetch = require('node-fetch');
+// Node 18+ / 24 já tem fetch nativo
+const fetch = global.fetch;
 
-// 🔑 opcional (funciona sem, mas melhor com)
+// 🔑 opcional (funciona sem, mas melhora qualidade)
 const API_KEY = process.env.CRYPTOPANIC_API_KEY;
 
 // Cache (5 min)
 let _cache = { data: null, ts: 0 };
 const CACHE_TTL = 5 * 60 * 1000;
 
+// ─────────────────────────────
+// MAIN
+// ─────────────────────────────
 async function fetchNews(lang = 'pt') {
   const now = Date.now();
 
@@ -21,7 +25,6 @@ async function fetchNews(lang = 'pt') {
   }
 
   try {
-    // 🥇 Fonte principal
     const news = await fetchCryptoPanic();
 
     if (news.length > 0) {
@@ -30,12 +33,10 @@ async function fetchNews(lang = 'pt') {
     }
 
     throw new Error('Sem dados CryptoPanic');
-
   } catch (err) {
-    console.warn('⚠️ Erro CryptoPanic:', err.message);
+    console.warn('⚠️ CryptoPanic falhou:', err.message);
 
     try {
-      // 🔄 fallback
       const fallback = await fetchRSS();
 
       if (fallback.length > 0) {
@@ -44,11 +45,9 @@ async function fetchNews(lang = 'pt') {
       }
 
       throw new Error('RSS vazio');
-
     } catch (err2) {
-      console.error('❌ Tudo falhou:', err2.message);
+      console.error('❌ Falha total:', err2.message);
 
-      // 🧠 último recurso
       return _cache.data || [];
     }
   }
@@ -61,7 +60,7 @@ async function fetchCryptoPanic() {
   const url = `https://cryptopanic.com/api/v1/posts/?auth_token=${API_KEY}&public=true&kind=news&filter=hot`;
 
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Status ${res.status}`);
+  if (!res.ok) throw new Error(`CryptoPanic error ${res.status}`);
 
   const data = await res.json();
 
@@ -79,7 +78,8 @@ async function fetchCryptoPanic() {
 // RSS fallback (CoinDesk)
 // ─────────────────────────────
 async function fetchRSS() {
-  const url = 'https://api.rss2json.com/v1/api.json?rss_url=https://www.coindesk.com/arc/outboundfeeds/rss/';
+  const url =
+    'https://api.rss2json.com/v1/api.json?rss_url=https://www.coindesk.com/arc/outboundfeeds/rss/';
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`RSS error ${res.status}`);
@@ -89,7 +89,9 @@ async function fetchRSS() {
   return (data.items || []).slice(0, 8).map(item => ({
     title: item.title,
     source: 'CoinDesk',
-    summary: item.description.replace(/<[^>]+>/g, '').slice(0, 140),
+    summary: item.description
+      ? item.description.replace(/<[^>]+>/g, '').slice(0, 140)
+      : '',
     url: item.link,
     publishedAt: item.pubDate || '',
     category: mapCategory(item.title)
