@@ -1,9 +1,7 @@
 /* ═══════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════ */
-const API = window.location.hostname === 'localhost'
-  ? 'http://localhost:3001/api'
-  : '/api';
+const API = 'https://coinhatfeeds.onrender.com/api';
 
 let state = {
   lang: 'pt',
@@ -37,7 +35,7 @@ async function apiFetch(endpoint, timeout = 8000) {
     });
     if (!res.ok) throw new Error('fail');
     const data = await res.json();
-    return data.data || [];
+    return data.data || data || [];
   } catch {
     return null;
   }
@@ -48,14 +46,11 @@ async function apiFetch(endpoint, timeout = 8000) {
 ═══════════════════════════════════════ */
 async function fetchNews() {
   const data = await apiFetch(`news?lang=${state.lang}`);
-
   if (data) return data;
-
   return fetchNewsFallback();
 }
 
 async function fetchNewsFallback() {
-  // fallback IA (o seu já tava bom)
   return [];
 }
 
@@ -63,7 +58,7 @@ async function fetchNewsFallback() {
    TABS LOADER
 ═══════════════════════════════════════ */
 async function loadTab(tab, force = false) {
-  if (state.fetched[tab] && !force) {
+  if (state.fetched[tab] &&!force) {
     return renderTab(tab, state.cache[tab]);
   }
 
@@ -174,10 +169,10 @@ function getBotReply(msg) {
    UTILS
 ═══════════════════════════════════════ */
 const fmt = n =>
-  !n ? '—' :
-  n >= 1e9 ? '$' + (n/1e9).toFixed(2)+'B' :
-  n >= 1e6 ? '$' + (n/1e6).toFixed(2)+'M' :
-  n >= 1e3 ? '$' + (n/1e3).toFixed(2)+'K' :
+ !n? '—' :
+  n >= 1e9? '$' + (n/1e9).toFixed(2)+'B' :
+  n >= 1e6? '$' + (n/1e6).toFixed(2)+'M' :
+  n >= 1e3? '$' + (n/1e3).toFixed(2)+'K' :
   '$' + n.toFixed(4);
 
 /* ═══════════════════════════════════════
