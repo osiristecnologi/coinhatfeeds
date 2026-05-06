@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+
+// DEBUG - RODA ANTES DE TUDO
 console.log('=== DEBUG RENDER ===');
 console.log('PWD:', process.cwd());
 console.log('DIRNAME:', __dirname);
@@ -12,15 +14,12 @@ try {
 }
 console.log('=== FIM DEBUG ===');
 
-const express = require('express');
-const presalesRoutes = require('./routes/presales'); // essa linha só depois do debug
-// resto do código...
+// ─────────────────────────────────────────────
 //  CoinHatFeeds · Backend Server
 //  Node.js + Express
 // ─────────────────────────────────────────────
 const express = require('express');
 const cors    = require('cors');
-const path    = require('path');
 
 const newsRouter      = require('./routes/news');
 const presalesRouter  = require('./routes/presales');
@@ -38,26 +37,4 @@ app.use(express.json());
 // Serve frontend estático em produção
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// ── API Routes ──────────────────────────────
-app.use('/api/news',      newsRouter);
-app.use('/api/presales',  presalesRouter);
-app.use('/api/alpha',     alphaRouter);
-app.use('/api/airdrops',  airdropsRouter);
-app.use('/api/sponsors',  sponsorsRouter);
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Fallback → index.html (SPA)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
-});
-
-app.listen(PORT, () => {
-  console.log(`✅  CoinHatFeeds backend rodando em http://localhost:${PORT}`);
-});
-
-module.exports = app;
-
+//
