@@ -431,27 +431,65 @@ function renderSponsors(data, container) {
 ═══════════════════════════════════════ */
 async function loadMemecoins() {
   const container = document.getElementById('memeGrid');
-  if(!container) return;
 
-  // Mantém fallback
-  if (!state.memeData.length) {
-    container.innerHTML = `
-      <div class="meme-skeleton"><div style="display:flex;gap:12px;align-items:center"><div class="sk sk-circle"></div><div style="flex:1"><div class="sk sk-line" style="margin:0 0 6px;height:12px"></div><div class="sk sk-line" style="margin:0;width:50%;height:10px"></div></div><div class="sk sk-block"></div></div>
-      <div class="meme-skeleton"><div style="display:flex;gap:12px;align-items:center"><div class="sk sk-circle"></div><div style="flex:1"><div class="sk sk-line" style="margin:0 0 6px;height:12px"></div><div class="sk sk-line" style="margin:0;width:50%;height:10px"></div></div><div class="sk sk-block"></div></div>
-    `;
-  }
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="loading-box">
+      Carregando memecoins...
+    </div>
+  `;
 
   try {
-    const res = await fetch('https://api.dexscreener.com/token-boosts/latest/v1');
-    const boosts = await res.json();
-    const pairs = boosts.slice(0, 18);
 
-    if (pairs.length) {
-      state.memeData = pairs;
-      renderMemes(pairs);
-    }
-  } catch(e) {
-    console.error('Erro DexScreener:', e);
+    // PEGA TOKENS BOOSTADOS
+    const boostRes = await fetch(
+      'https://api.dexscreener.com/token-boosts/latest/v1'
+    );
+
+    const boosts = await boostRes.json();
+
+    // PEGA SOMENTE PRIMEIROS
+    const selected = boosts.slice(0, 12);
+
+    // AGORA BUSCA DADOS REAIS DOS PAIRS
+    const pairsPromises = selected.map(async token => {
+
+      try {
+
+        const res = await fetch(
+          `https://api.dexscreener.com/latest/dex/search?q=${token.tokenAddress}`
+        );
+
+        const data = await res.json();
+
+        return data.pairs?.[0];
+
+      } catch {
+        return null;
+      }
+
+    });
+
+    const pairs = await Promise.all(pairsPromises);
+
+    const validPairs = pairs.filter(Boolean);
+
+    state.memeData = validPairs;
+
+    renderMemes(validPairs);
+
+  } catch (err) {
+
+    console.error(err);
+
+    container.innerHTML = `
+      <div class="error-box">
+        Erro ao carregar memecoins
+      </div>
+    `;
+  }
+}
   }
 }
 
