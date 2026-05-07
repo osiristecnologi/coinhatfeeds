@@ -14,144 +14,91 @@ app.use(express.static('public'));
 // API Routes
 app.use('/api/news', require('./routes/news'));
 
-// FUSÃO: ROTA /api/memes ANTI-BLOQUEIO COM FALLBACK
+// ROTA /api/memes - BOOST + GEMAS 40K+ PRA CIMA
 app.get('/api/memes', async (req, res) => {
   try {
     const headers = {
-      'User-Agent': 'Mozilla/5.0 (compatible; CoinhatBot/1.0)',
+      'User-Agent': 'Mozilla/5.0 CoinhatBot/1.0',
       'Accept': 'application/json'
     };
 
-    // Busca direto tokens quentes - já retorna nome, preço, logo
-    const r = await fetch('https://api.dexscreener.com/latest/dex/search?q=PEPE+WIF+BONK+FLOKI+DOGE', {
+    // PASSO 1: Pega tokens em BOOST hoje
+    const boostRes = await fetch('https://api.dexscreener.com/token-boosts/top/v1', {
       timeout: 8000,
       headers
     });
     
-    if (!r.ok) throw new Error(`DexScreener ${r.status}`);
+    if (!boostRes.ok) throw new Error(`Boost ${boostRes.status}`);
+    const boosts = await boostRes.json();
     
-    const json = await r.json();
+    if (!boosts.length) throw new Error('Sem boosts hoje');
+
+    // PASSO 2: Monta lista chain/token pra buscar dados completos
+    const pairs = boosts.slice(0, 30).map(b => `${b.chainId}/${b.tokenAddress}`).join(',');
     
-    const data = json.pairs
-      .filter(p => p.chainId && p.liquidity?.usd > 30000 && p.priceUsd && p.baseToken)
-      .sort((a, b) => b.volume.h24 - a.volume.h24)
+    // PASSO 3: Busca dados dos tokens em boost
+    const tokensRes = await fetch(`https://api.dexscreener.com/tokens/v1/${pairs}`, {
+      timeout: 8000,
+      headers
+    });
+    
+    if (!tokensRes.ok) throw new Error(`Tokens ${tokensRes.status}`);
+    const tokensData = await tokensRes.json();
+    
+    // PASSO 4: FILTRO 40K+ PRA CIMA
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    
+    const data = tokensData
+      .flat()
+      .filter(p => {
+        const fdv = p.fdv || p.marketCap || 0;
+        const liquidity = p.liquidity?.usd || 0;
+        const created = p.pairCreatedAt || 0;
+        
+        return fdv >= 40000 &&           // 40K PRA CIMA
+               liquidity >= 20000 &&     // Liquidez mínima 20k
+               created > thirtyDaysAgo && // Só criadas últimos 30 dias
+               p.baseToken && 
+               p.priceUsd;
+      })
+      .sort((a, b) => b.fdv - a.fdv) // Maior MC primeiro
       .slice(0, 18);
 
-    if (data.length === 0) throw new Error('Sem pares válidos');
+    if (data.length === 0) throw new Error('Nenhuma gema 40k+ com boost encontrada');
 
     res.json({ data });
     
   } catch(e) {
     console.error('Erro /api/memes:', e.message);
     
-    // FALLBACK: Nunca mais Unknown ??? 
-    res.json({ 
-      data: [
-        {
-          chainId: "ethereum",
-          pairAddress: "mock-pepe",
-          baseToken: { name: "Pepe", symbol: "PEPE", address: "0x6982508145454ce325ddbe47a25d4ec3d2311933" },
-          priceUsd: "0.00000112",
-          priceChange: { h24: 12.5 },
-          volume: { h24: 25000000 },
-          liquidity: { usd: 8900000 },
-          fdv: 470000000,
-          info: { imageUrl: "https://dd.dexscreener.com/ds-data/tokens/ethereum/0x6982508145454ce325ddbe47a25d4ec3d2311933.png" }
-        },
-        {
-          chainId: "solana",
-          pairAddress: "mock-wif", 
-          baseToken: { name: "dogwifhat", symbol: "WIF", address: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYXDwg6" },
-          priceUsd: "1.23",
-          priceChange: { h24: -3.2 },
-          volume: { h24: 18900000 },
-          liquidity: { usd: 12000000 },
-          fdv: 1200000000,
-          info: { imageUrl: "https://dd.dexscreener.com/ds-data/tokens/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYXDwg6.png" }
-        },
-        {
-          chainId: "solana",
-          pairAddress: "mock-bonk",
-          baseToken: { name: "Bonk", symbol: "BONK", address: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" },
-          priceUsd: "0.000018",
-          priceChange: { h24: 8.7 },
-          volume: { h24: 15600000 },
-          liquidity: { usd: 21000000 },
-          fdv: 1100000000,
-          info: { imageUrl: "https://dd.dexscreener.com/ds-data/tokens/solana/DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263.png" }
-        }
-      ], 
-      error: 'DexScreener offline - usando cache' 
-    });
+    // FALLBACK: Se boost falhar, busca direto as novas 40k+
+    try {
+      const headers = { 'User-Agent': 'Mozilla/5.0 CoinhatBot/1.0' };
+      const r = await fetch('https://api.dexscreener.com/latest/dex/search?q=solana', { headers });
+      const json = await r.json();
+      
+      const fallbackData = json.pairs
+        .filter(p => {
+          const fdv = p.fdv || p.marketCap || 0;
+          const created = p.pairCreatedAt || 0;
+          return fdv >= 40000 && 
+                 p.liquidity?.usd >= 20000 &&
+                 created > Date.now() - 30 * 24 * 60 * 60 * 1000;
+        })
+        .sort((a, b) => b.fdv - a.fdv)
+        .slice(0, 18);
+      
+      res.json({ data: fallbackData, error: 'Boost offline - usando busca direta 40k+' });
+      
+    } catch {
+      res.json({ data: [], error: 'DexScreener offline' });
+    }
   }
 });
 
-// FUSÃO: Rotas do drawer
+// Rotas do drawer
 app.get('/api/presales', (req, res) => {
-  const lang = req.query.lang || 'pt';
   res.json({ data: [] });
 });
 
-app.get('/api/alpha', (req, res) => {
-  const lang = req.query.lang || 'pt';
-  res.json({ data: [] });
-});
-
-app.get('/api/airdrops', (req, res) => {
-  const lang = req.query.lang || 'pt';
-  res.json({ data: [] });
-});
-
-app.get('/api/sponsors', (req, res) => {
-  const lang = req.query.lang || 'pt';
-  res.json({ data: [] });
-});
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    message: 'Coinhat API is running',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Rota raiz pra teste
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Coinhat Feeds API',
-    endpoints: [
-      '/api/health',
-      '/api/news',
-      '/api/memes',
-      '/api/sponsors', 
-      '/api/presales',
-      '/api/alpha',
-      '/api/airdrops'
-    ]
-  });
-});
-
-// Handler pra rota não encontrada
-app.use('*', (req, res) => {
-  res.status(404).json({ 
-    error: 'Not Found',
-    message: `Rota ${req.originalUrl} não existe`
-  });
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Server rodando na porta ${PORT}`);
-});
-
-// Captura erro pra aparecer no log do Render
-process.on('uncaughtException', (err) => {
-  console.error('ERRO FATAL:', err);
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (err) => {
-  console.error('PROMISE REJEITADA:', err);
-  process.exit(1);
-});
+app.get('/api/alpha
