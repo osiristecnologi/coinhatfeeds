@@ -36,25 +36,28 @@ const i18n = {
     loading: 'Carregando...',
     no_data: 'Nenhum dado encontrado',
     live: 'LIVE',
-    kb: [
-      {
-        k: ['preço', 'price', 'cotação'],
-        r: 'Consulte o preço em tempo real no card da memecoin.'
-      },
-      {
-        k: ['airdrop', 'grátis'],
-        r: 'Confira a aba Airdrops no menu ☰.'
-      },
-      {
-        k: ['alpha', 'call'],
-        r: 'Aba Alpha traz calls exclusivas.'
-      },
-      {
-        k: ['presale', 'pré-venda'],
-        r: 'Veja as pré-vendas na aba Pré-vendas.'
-      }
-    ],
-    def: 'Não entendi. Pergunte sobre preço, alpha, airdrop ou pré-venda.'
+    def: 'Não entendi sua pergunta.'
+  },
+
+  en: {
+    search: 'Search token...',
+    news: 'News',
+    presales: 'Presales',
+    alpha: 'Alpha',
+    airdrops: 'Airdrops',
+    sponsors: 'Sponsors',
+    refresh: 'Refresh',
+    memecoins_title: 'Trending Memecoins',
+    memecoins_sub: 'Live prices and charts',
+    vol: '24h Vol',
+    liq: 'Liquidity',
+    mc: 'Market Cap',
+    contract: 'Contract',
+    chart_btn: 'Open Advanced Chart',
+    loading: 'Loading...',
+    no_data: 'No data found',
+    live: 'LIVE',
+    def: 'I did not understand.'
   }
 };
 
@@ -63,11 +66,12 @@ function t(key) {
 }
 
 /* ═══════════════════════════════════════
-   INTERFACE LANG
+   LANGUAGE
 ═══════════════════════════════════════ */
 function updateInterfaceLang() {
 
   const searchInput = document.getElementById('searchInput');
+
   if (searchInput) {
     searchInput.placeholder = t('search');
   }
@@ -87,17 +91,28 @@ function updateInterfaceLang() {
   };
 
   Object.entries(map).forEach(([id, key]) => {
+
     const el = document.getElementById(id);
-    if (el) el.textContent = t(key);
+
+    if (el) {
+      el.textContent = t(key);
+    }
+
   });
 
   const titleEl = document.querySelector('.section-title');
+
   if (titleEl) {
-    titleEl.innerHTML = `🔥 ${t('memecoins_title')}`;
+
+    titleEl.innerHTML = `
+      🔥 ${t('memecoins_title')}
+    `;
   }
 
   const subEl = document.querySelector('.section-sub');
+
   if (subEl) {
+
     subEl.innerHTML = `
       ${t('memecoins_sub')}
       ·
@@ -110,25 +125,29 @@ function updateInterfaceLang() {
 }
 
 function setLang(lang, el) {
+
   state.lang = lang;
-  state.fetched = {};
 
   document.querySelectorAll('.lang-opt')
     .forEach(o => o.classList.remove('selected'));
 
-  if (el) el.classList.add('selected');
+  if (el) {
+    el.classList.add('selected');
+  }
 
   updateInterfaceLang();
+
   closeLang();
-  loadTab(state.activeTab, true);
 }
 
 function toggleLang() {
+
   document.getElementById('langMenu')
     ?.classList.toggle('active');
 }
 
 function closeLang() {
+
   document.getElementById('langMenu')
     ?.classList.remove('active');
 }
@@ -137,6 +156,7 @@ function closeLang() {
    DRAWER
 ═══════════════════════════════════════ */
 function openDrawer() {
+
   document.getElementById('drawer')
     ?.classList.add('open');
 
@@ -144,11 +164,10 @@ function openDrawer() {
     ?.classList.add('active');
 
   state.drawerOpen = true;
-
-  loadTab(state.activeTab);
 }
 
 function closeDrawer() {
+
   document.getElementById('drawer')
     ?.classList.remove('open');
 
@@ -159,233 +178,11 @@ function closeDrawer() {
 }
 
 function closeAll() {
+
   closeDrawer();
   closeModal();
   closeLang();
   closeResults();
-}
-
-function switchDrawerTab(tab, el) {
-
-  document.querySelectorAll('.dtab')
-    .forEach(t => t.classList.remove('active'));
-
-  el.classList.add('active');
-
-  state.activeTab = tab;
-
-  loadTab(tab);
-}
-
-/* ═══════════════════════════════════════
-   API FETCH
-═══════════════════════════════════════ */
-async function apiFetch(endpoint, timeout = 8000) {
-
-  try {
-
-    const res = await fetch(`${API}/${endpoint}`, {
-      signal: AbortSignal.timeout(timeout)
-    });
-
-    if (!res.ok) {
-      throw new Error('API Error');
-    }
-
-    const data = await res.json();
-
-    return data.data || data || [];
-
-  } catch (e) {
-
-    console.error('API Error:', e);
-
-    return [];
-
-  }
-}
-
-/* ═══════════════════════════════════════
-   LOAD TAB
-═══════════════════════════════════════ */
-async function loadTab(tab, force = false) {
-
-  const cacheKey = `${tab}_${state.lang}`;
-
-  if (state.fetched[cacheKey] && !force) {
-    return renderTab(tab, state.cache[cacheKey]);
-  }
-
-  showDrawerLoading();
-
-  let data = [];
-
-  try {
-
-    data = await apiFetch(`${tab}?lang=${state.lang}`);
-
-  } catch (err) {
-
-    console.error(err);
-
-  }
-
-  state.cache[cacheKey] = data;
-  state.fetched[cacheKey] = true;
-
-  renderTab(tab, data);
-}
-
-function showDrawerLoading() {
-
-  const container = document.getElementById('drawerBody');
-
-  if (!container) return;
-
-  container.innerHTML = `
-    <div class="loading-box">
-      ${t('loading')}
-    </div>
-  `;
-}
-
-/* ═══════════════════════════════════════
-   RENDER TAB
-═══════════════════════════════════════ */
-function renderTab(tab, data) {
-
-  const container = document.getElementById('drawerBody');
-
-  if (!container) return;
-
-  if (!data || !data.length) {
-
-    container.innerHTML = `
-      <div class="empty-state">
-        📭 ${t('no_data')}
-      </div>
-    `;
-
-    return;
-  }
-
-  switch (tab) {
-
-    case 'news':
-      renderNews(data, container);
-      break;
-
-    case 'presales':
-      renderPresales(data, container);
-      break;
-
-    case 'alpha':
-      renderAlpha(data, container);
-      break;
-
-    case 'airdrops':
-      renderAirdrops(data, container);
-      break;
-
-    case 'sponsors':
-      renderSponsors(data, container);
-      break;
-  }
-}
-
-/* ═══════════════════════════════════════
-   RENDERS
-═══════════════════════════════════════ */
-function renderNews(data, container) {
-
-  container.innerHTML = data.map(news => `
-    <div class="news-card"
-      onclick="window.open('${news.url || '#'}','_blank')">
-
-      ${news.image ? `
-        <img class="news-img"
-          src="${news.image}"
-          onerror="this.style.display='none'">
-      ` : ''}
-
-      <div class="news-info">
-
-        <div class="news-source">
-          ${news.source || 'CoinHat'}
-        </div>
-
-        <div class="news-title">
-          ${news.title || ''}
-        </div>
-
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderPresales(data, container) {
-
-  container.innerHTML = data.map(p => `
-    <div class="presale-card">
-
-      <div class="presale-name">
-        ${p.name || 'Unknown'}
-      </div>
-
-      <div class="presale-chain">
-        ${p.chain || 'BSC'}
-      </div>
-
-    </div>
-  `).join('');
-}
-
-function renderAlpha(data, container) {
-
-  container.innerHTML = data.map(a => `
-    <div class="alpha-card">
-
-      <div class="alpha-title">
-        ${a.title || 'Alpha'}
-      </div>
-
-      <div class="alpha-body">
-        ${a.body || a.description || ''}
-      </div>
-
-    </div>
-  `).join('');
-}
-
-function renderAirdrops(data, container) {
-
-  container.innerHTML = data.map(a => `
-    <div class="airdrop-card">
-
-      <div class="airdrop-name">
-        ${a.name || 'Airdrop'}
-      </div>
-
-      <div class="airdrop-reward">
-        ${a.reward || '???'}
-      </div>
-
-    </div>
-  `).join('');
-}
-
-function renderSponsors(data, container) {
-
-  container.innerHTML = data.map(s => `
-    <div class="sponsor-card"
-      onclick="window.open('${s.url || '#'}','_blank')">
-
-      <div class="sponsor-name">
-        ${s.name || 'Sponsor'}
-      </div>
-
-    </div>
-  `).join('');
 }
 
 /* ═══════════════════════════════════════
@@ -399,7 +196,7 @@ async function loadMemecoins() {
 
   container.innerHTML = `
     <div class="loading-box">
-      Carregando memecoins...
+      ${t('loading')}
     </div>
   `;
 
@@ -428,7 +225,6 @@ async function loadMemecoins() {
       } catch {
 
         return null;
-
       }
 
     });
@@ -459,23 +255,10 @@ function renderMemes(data) {
 
   if (!container) return;
 
-  if (!data.length) {
-
-    container.innerHTML = `
-      <div class="error-box">
-        Nenhuma memecoin encontrada
-      </div>
-    `;
-
-    return;
-  }
-
   container.innerHTML = data.map((p, i) => {
 
     const price = parseFloat(p.priceUsd || 0);
     const change = p.priceChange?.h24 || 0;
-    const vol = p.volume?.h24 || 0;
-    const liq = p.liquidity?.usd || 0;
 
     return `
       <div class="meme-card"
@@ -523,20 +306,6 @@ function renderMemes(data) {
 
         </div>
 
-        <div class="meme-stats">
-
-          <div class="meme-stat">
-            Vol
-            <span>${fmt(vol)}</span>
-          </div>
-
-          <div class="meme-stat">
-            Liq
-            <span>${fmt(liq)}</span>
-          </div>
-
-        </div>
-
       </div>
     `;
 
@@ -553,18 +322,30 @@ function openToken(pair) {
   document.getElementById('tokenModal')
     ?.classList.add('active');
 
-  document.getElementById('m-logo').src =
-    pair.info?.imageUrl || '';
+  // LOGO
+  const logo = document.getElementById('m-logo');
 
+  logo.style.display = 'block';
+  logo.src = pair.info?.imageUrl || '';
+
+  // INFO
   document.getElementById('m-name').textContent =
     pair.baseToken?.name || 'Unknown';
 
   document.getElementById('m-sym').textContent =
     pair.baseToken?.symbol || '???';
 
-  document.getElementById('m-price').textContent =
-    '$' + (parseFloat(pair.priceUsd || 0)).toFixed(6);
+  // PREÇO
+  const price = parseFloat(pair.priceUsd || 0);
 
+  document.getElementById('m-price').textContent =
+    '$' + (
+      price < 0.01
+        ? price.toFixed(8)
+        : price.toFixed(6)
+    );
+
+  // CHANGE
   const change = pair.priceChange?.h24 || 0;
 
   const chgEl = document.getElementById('m-chg');
@@ -575,6 +356,7 @@ function openToken(pair) {
   chgEl.className =
     `meme-chg ${change >= 0 ? 'pos' : 'neg'}`;
 
+  // STATS
   document.getElementById('m-vol').textContent =
     fmt(pair.volume?.h24 || 0);
 
@@ -584,8 +366,56 @@ function openToken(pair) {
   document.getElementById('m-mc').textContent =
     fmt(pair.marketCap || pair.fdv || 0);
 
+  // CONTRATO
   document.getElementById('m-addr').textContent =
     pair.baseToken?.address || '—';
+
+  // LINKS
+  const links = document.getElementById('m-links');
+
+  const socials = pair.info?.socials || [];
+  const websites = pair.info?.websites || [];
+
+  let html = '';
+
+  websites.forEach(w => {
+
+    html += `
+      <a href="${w.url}"
+         target="_blank"
+         class="token-link">
+         🌐 Website
+      </a>
+    `;
+  });
+
+  socials.forEach(s => {
+
+    let icon = '🔗';
+
+    if (s.type === 'twitter') icon = '𝕏';
+    if (s.type === 'telegram') icon = '✈️';
+    if (s.type === 'discord') icon = '💬';
+
+    html += `
+      <a href="${s.url}"
+         target="_blank"
+         class="token-link">
+         ${icon} ${s.type}
+      </a>
+    `;
+  });
+
+  if (!html) {
+
+    html = `
+      <div style="opacity:.7;padding:8px 0;">
+        Nenhum link encontrado
+      </div>
+    `;
+  }
+
+  links.innerHTML = html;
 
   loadChart();
 }
@@ -596,6 +426,9 @@ function closeModal() {
     ?.classList.remove('active');
 }
 
+/* ═══════════════════════════════════════
+   CHART
+═══════════════════════════════════════ */
 function loadChart() {
 
   const chart = document.getElementById('m-chart');
@@ -603,10 +436,18 @@ function loadChart() {
   if (!chart || !state.currentPair) return;
 
   chart.innerHTML = `
-    <iframe
-      src="https://dexscreener.com/${state.currentPair.chainId}/${state.currentPair.pairAddress}?embed=1&theme=dark"
-      style="width:100%;height:100%;border:none;">
-    </iframe>
+    <foreignObject width="100%" height="100%">
+      <div xmlns="http://www.w3.org/1999/xhtml"
+           style="width:100%;height:100%;overflow:hidden;border-radius:16px;">
+
+        <iframe
+          src="https://dexscreener.com/${state.currentPair.chainId}/${state.currentPair.pairAddress}?embed=1&theme=dark"
+          style="width:100%;height:100%;border:none;"
+          allowfullscreen>
+        </iframe>
+
+      </div>
+    </foreignObject>
   `;
 }
 
@@ -620,6 +461,7 @@ function onSearch(q) {
   clearTimeout(searchTimeout);
 
   if (q.length < 2) {
+
     closeResults();
     return;
   }
@@ -639,7 +481,6 @@ function onSearch(q) {
     } catch (err) {
 
       console.error(err);
-
     }
 
   }, 400);
@@ -651,19 +492,6 @@ function renderSearch(pairs) {
     document.getElementById('search-results');
 
   if (!container) return;
-
-  if (!pairs.length) {
-
-    container.innerHTML = `
-      <div class="empty-state">
-        Nenhum resultado
-      </div>
-    `;
-
-    container.classList.add('active');
-
-    return;
-  }
 
   container.innerHTML = pairs.slice(0, 8).map(p => `
     <div class="sr-item"
@@ -705,11 +533,7 @@ function toggleChat() {
     document.getElementById('chatMessages').children.length === 0
   ) {
 
-    addBotMsg(
-      'Olá! Sou o CryptoBot 🤖'
-    );
-
-    showSuggestions();
+    addBotMsg('Olá! Sou o CryptoBot 🤖');
   }
 }
 
@@ -747,28 +571,6 @@ function addUserMsg(text) {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-function showSuggestions() {
-
-  const sugs = document.getElementById('chatSugs');
-
-  if (!sugs) return;
-
-  const sugList = [
-    'Preço BTC',
-    'Airdrop ativo',
-    'Alpha call',
-    'Pré-venda'
-  ];
-
-  sugs.innerHTML = sugList.map(s => `
-    <button
-      class="chat-sug"
-      onclick="sendChat('${s}')">
-      ${s}
-    </button>
-  `).join('');
-}
-
 function sendChat(preset) {
 
   const input = document.getElementById('chatInput');
@@ -783,29 +585,11 @@ function sendChat(preset) {
 
   setTimeout(() => {
 
-    addBotMsg(getBotReply(msg));
+    addBotMsg(
+      (i18n[state.lang] || i18n.pt).def
+    );
 
   }, 500);
-}
-
-function getBotReply(msg) {
-
-  const kb = (i18n[state.lang] || i18n.pt).kb;
-
-  for (const item of kb) {
-
-    if (
-      item.k.some(k =>
-        msg.toLowerCase().includes(k)
-      )
-    ) {
-
-      return item.r;
-
-    }
-  }
-
-  return (i18n[state.lang] || i18n.pt).def;
 }
 
 /* ═══════════════════════════════════════
@@ -832,8 +616,6 @@ const fmt = n =>
 document.addEventListener('DOMContentLoaded', () => {
 
   updateInterfaceLang();
-
-  loadTab('news');
 
   loadMemecoins();
 
