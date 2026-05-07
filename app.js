@@ -10,7 +10,8 @@ let state = {
   currentTf: 'm5',
   activeTab: 'news',
   cache: {},
-  fetched: {}
+  fetched: {},
+  drawerOpen: false
 };
 
 /* ═══════════════════════════════════════
@@ -18,7 +19,6 @@ let state = {
 ═══════════════════════════════════════ */
 const i18n = {
   pt: {
-    // Interface
     'search': 'Buscar token...',
     'news': 'Notícias',
     'presales': 'Pré-vendas',
@@ -36,7 +36,6 @@ const i18n = {
     'loading': 'Carregando...',
     'no_data': 'Nenhum dado encontrado',
     'live': 'LIVE',
-    // Chatbot
     kb: [
       {k: ['preço','price','cotação'], r: 'Consulte o preço em tempo real no card da memecoin. Clique para ver gráfico.'},
       {k: ['airdrop','grátis'], r: 'Confira a aba Airdrops no menu ☰ para campanhas ativas.'},
@@ -63,12 +62,7 @@ const i18n = {
     'loading': 'Loading...',
     'no_data': 'No data found',
     'live': 'LIVE',
-    kb: [
-      {k: ['price','quote'], r: 'Check real-time price on the memecoin card. Click for chart.'},
-      {k: ['airdrop','free'], r: 'Check Airdrops tab in menu ☰ for active campaigns.'},
-      {k: ['alpha','call'], r: 'Alpha tab has exclusive community calls.'},
-      {k: ['presale'], r: 'Presales listed in Presales tab with official links.'}
-    ],
+    kb: [],
     def: 'I did not understand. Ask about price, airdrop, alpha or presale.'
   },
   es: {
@@ -163,10 +157,556 @@ function t(key) {
 
 // FUSÃO: Atualiza textos da interface
 function updateInterfaceLang() {
-  document.getElementById('searchInput').placeholder = t('search');
-  document.getElementById('dt-news').textContent = t('news');
-  document.getElementById('dt-presales').textContent = t('presales');
-  document.getElementById('dt-alpha').textContent = t('alpha');
-  document.getElementById('dt-airdrops').textContent = t('airdrops');
-  document.getElementById('dt-sponsors').textContent = t('sponsors');
-  document.getElementById('nt-title').innerHTML = `<img src="data:image/png;base64,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
+  const els = {
+    'searchInput': 'placeholder',
+    'dt-news': 'textContent',
+    'dt-presales': 'textContent',
+    'dt-alpha': 'textContent',
+    'dt-airdrops': 'textContent',
+    'dt-sponsors': 'textContent',
+    'nt-refresh': 'textContent',
+    'nt-vol': 'textContent',
+    'nt-liq': 'textContent',
+    'nt-mc': 'textContent',
+    'nt-contract': 'textContent',
+    'dexBtnLabel': 'textContent'
+  };
+
+  if(document.getElementById('searchInput')) document.getElementById('searchInput').placeholder = t('search');
+  if(document.getElementById('dt-news')) document.getElementById('dt-news').textContent = t('news');
+  if(document.getElementById('dt-presales')) document.getElementById('dt-presales').textContent = t('presales');
+  if(document.getElementById('dt-alpha')) document.getElementById('dt-alpha').textContent = t('alpha');
+  if(document.getElementById('dt-airdrops')) document.getElementById('dt-airdrops').textContent = t('airdrops');
+  if(document.getElementById('dt-sponsors')) document.getElementById('dt-sponsors').textContent = t('sponsors');
+  if(document.getElementById('nt-refresh')) document.getElementById('nt-refresh').textContent = t('refresh');
+  if(document.getElementById('nt-vol')) document.getElementById('nt-vol').textContent = t('vol');
+  if(document.getElementById('nt-liq')) document.getElementById('nt-liq').textContent = t('liq');
+  if(document.getElementById('nt-mc')) document.getElementById('nt-mc').textContent = t('mc');
+  if(document.getElementById('nt-contract')) document.getElementById('nt-contract').textContent = t('contract');
+  if(document.getElementById('dexBtnLabel')) document.getElementById('dexBtnLabel').textContent = t('chart_btn');
+
+  // Atualiza títulos
+  const titleEl = document.querySelector('.section-title');
+  if(titleEl) titleEl.childNodes[1].nodeValue = ' ' + t('memecoins_title');
+  const subEl = document.querySelector('.section-sub');
+  if(subEl) subEl.innerHTML = `${t('memecoins_sub')} · <span class="live"><span class="live-dot"></span>${t('live')}</span>`;
+}
+
+function setLang(lang, el) {
+  state.lang = lang;
+  state.fetched = {}; // Limpa cache ao trocar idioma
+  document.querySelectorAll('.lang-opt').forEach(o => o.classList.remove('selected'));
+  if(el) el.classList.add('selected');
+  updateInterfaceLang();
+  closeLang();
+  // Recarrega aba ativa com novo idioma
+  loadTab(state.activeTab, true);
+}
+
+function toggleLang() {
+  document.getElementById('langMenu').classList.toggle('active');
+}
+
+function closeLang() {
+  document.getElementById('langMenu').classList.remove('active');
+}
+
+/* ═══════════════════════════════════════
+   DRAWER - FUSÃO: ADICIONADO
+═══════════════════════════════════════ */
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('overlay').classList.add('active');
+  state.drawerOpen = true;
+  loadTab(state.activeTab); // Carrega tab ativa ao abrir
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+  state.drawerOpen = false;
+}
+
+function closeAll() {
+  closeDrawer();
+  closeModal();
+  closeLang();
+  closeResults();
+}
+
+function switchDrawerTab(tab, el) {
+  document.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  state.activeTab = tab;
+  loadTab(tab);
+}
+
+/* ═══════════════════════════════════════
+   FETCH GENERIC
+═══════════════════════════════════════ */
+async function apiFetch(endpoint, timeout = 8000) {
+  try {
+    const res = await fetch(`${API}/${endpoint}`, {
+      signal: AbortSignal.timeout(timeout)
+    });
+    if (!res.ok) throw new Error('fail');
+    const data = await res.json();
+    return data.data || data || [];
+  } catch (e) {
+    console.error('API Error:', e);
+    return null;
+  }
+}
+
+/* ═══════════════════════════════════════
+   TABS LOADER - FUSÃO: COM LANG
+═══════════════════════════════════════ */
+async function loadTab(tab, force = false) {
+  const cacheKey = `${tab}_${state.lang}`;
+
+  if (state.fetched[cacheKey] &&!force) {
+    return renderTab(tab, state.cache[cacheKey]);
+  }
+
+  showDrawerLoading();
+
+  let data = [];
+  const langParam = `?lang=${state.lang}`;
+
+  switch (tab) {
+    case 'news':
+      data = await apiFetch(`news${langParam}`);
+      break;
+    case 'presales':
+      data = await apiFetch(`presales${langParam}`);
+      break;
+    case 'alpha':
+      data = await apiFetch(`alpha${langParam}`);
+      break;
+    case 'airdrops':
+      data = await apiFetch(`airdrops${langParam}`);
+      break;
+    case 'sponsors':
+      data = await apiFetch(`sponsors${langParam}`);
+      break;
+  }
+
+  state.cache[cacheKey] = data || [];
+  state.fetched[cacheKey] = true;
+
+  renderTab(tab, data);
+}
+
+function showDrawerLoading() {
+  const container = document.getElementById('drawerBody');
+  if (container) {
+    container.innerHTML = `
+      <div class="news-skeleton"><div class="sk sk-img"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div></div>
+      <div class="news-skeleton"><div class="sk sk-img"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div></div>
+    `;
+  }
+}
+
+/* ═══════════════════════════════════════
+   RENDER CONTROLLER - FUSÃO: TELA CHEIA
+═══════════════════════════════════════ */
+function renderTab(tab, data) {
+  const container = document.getElementById('drawerBody');
+  if (!container) return;
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">📭</div>
+        <p>${t('no_data')}</p>
+      </div>
+    `;
+    return;
+  }
+
+  const map = {
+    news: renderNews,
+    presales: renderPresales,
+    alpha: renderAlpha,
+    airdrops: renderAirdrops,
+    sponsors: renderSponsors
+  };
+
+  map[tab]?.(data, container);
+}
+
+/* ═══════════════════════════════════════
+   RENDER NEWS - FUSÃO: TELA CHEIA
+═══════════════════════════════════════ */
+function renderNews(data, container) {
+  container.innerHTML = data.map(news => `
+    <div class="news-card" onclick="window.open('${news.url || '#'}', '_blank')">
+      ${news.image? `<img class="news-img" src="${news.image}" onerror="this.style.display='none'" alt="">` : ''}
+      <div class="news-info">
+        <div class="news-source" style="color:var(--blue)">${news.source || 'CoinHatFeeds'}</div>
+        <div class="news-title">${news.title}</div>
+        <div class="news-date">${new Date(news.publishedAt || Date.now()).toLocaleDateString(state.lang === 'pt'? 'pt-BR' : 'en-US')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════
+   RENDER PRESALES - FUSÃO: TELA CHEIA
+═══════════════════════════════════════ */
+function renderPresales(data, container) {
+  container.innerHTML = data.map(p => `
+    <div class="presale-card">
+      <div class="presale-header">
+        <img class="presale-logo" src="${p.logo || p.image}" onerror="this.style.display='none'" alt="">
+        <div>
+          <div class="presale-name">${p.name}</div>
+          <div class="presale-chain">${p.chain || 'BSC'}</div>
+        </div>
+        <span class="status-badge status-${p.status || 'active'}">${p.status || 'active'}</span>
+      </div>
+      <div class="presale-progress">
+        <div class="presale-progress-fill" style="width:${p.progress || 0}%"></div>
+      </div>
+      <div class="presale-meta">
+        <span>Arrecadado: <strong>${fmt(p.raised || 0)}</strong></span>
+        <span>Meta: <strong>${fmt(p.target || 0)}</strong></span>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════
+   RENDER ALPHA - FUSÃO: TELA CHEIA
+═══════════════════════════════════════ */
+function renderAlpha(data, container) {
+  container.innerHTML = data.map(a => `
+    <div class="alpha-card">
+      <div class="alpha-tag">${a.tag || 'ALPHA'}</div>
+      <div class="alpha-title">${a.title}</div>
+      <div class="alpha-body">${a.body || a.description}</div>
+      <span class="risk-badge risk-${a.risk || 'medium'}">${a.risk || 'MEDIUM'} RISK</span>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════
+   RENDER AIRDROPS - FUSÃO: TELA CHEIA
+═══════════════════════════════════════ */
+function renderAirdrops(data, container) {
+  container.innerHTML = data.map(a => `
+    <div class="airdrop-card">
+      <div class="airdrop-header">
+        <img class="airdrop-logo" src="${a.logo || a.image}" onerror="this.style.display='none'" alt="">
+        <div class="airdrop-name">${a.name}</div>
+      </div>
+      <div class="airdrop-reward">
+        <span class="airdrop-reward-amount">${a.reward || '???'} ${a.token || ''}</span>
+        <span class="airdrop-reward-usd">≈ ${fmt(a.usdValue || 0)}</span>
+      </div>
+      ${(a.tasks || []).map(task => `<div class="airdrop-task">✓ ${task}</div>`).join('')}
+      <a href="${a.link || '#'}" target="_blank" class="airdrop-link">Participar →</a>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════
+   RENDER SPONSORS - FUSÃO: TELA CHEIA
+═══════════════════════════════════════ */
+function renderSponsors(data, container) {
+  container.innerHTML = data.map(s => `
+    <div class="sponsor-card ${s.tier === 'gold'? 'gold' : ''}" onclick="window.open('${s.url || '#'}', '_blank')">
+      <img class="sponsor-logo" src="${s.logo}" onerror="this.style.display='none'" alt="">
+      <div class="sponsor-info">
+        <div class="sponsor-name">${s.name}</div>
+        <div class="sponsor-tag">${s.description || s.tag}</div>
+      </div>
+      <span class="sponsor-badge-tier tier-${s.tier || 'silver'}">${s.tier || 'SILVER'}</span>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════
+   MEMECOINS - MANTIDO DO ORIGINAL
+═══════════════════════════════════════ */
+async function loadMemecoins() {
+  const container = document.getElementById('memeGrid');
+  if(!container) return;
+
+  // Mantém fallback
+  if (!state.memeData.length) {
+    container.innerHTML = `
+      <div class="meme-skeleton"><div style="display:flex;gap:12px;align-items:center"><div class="sk sk-circle"></div><div style="flex:1"><div class="sk sk-line" style="margin:0 0 6px;height:12px"></div><div class="sk sk-line" style="margin:0;width:50%;height:10px"></div></div><div class="sk sk-block"></div></div>
+      <div class="meme-skeleton"><div style="display:flex;gap:12px;align-items:center"><div class="sk sk-circle"></div><div style="flex:1"><div class="sk sk-line" style="margin:0 0 6px;height:12px"></div><div class="sk sk-line" style="margin:0;width:50%;height:10px"></div></div><div class="sk sk-block"></div></div>
+    `;
+  }
+
+  try {
+    const res = await fetch('https://api.dexscreener.com/token-boosts/latest/v1');
+    const boosts = await res.json();
+    const pairs = boosts.slice(0, 18);
+
+    if (pairs.length) {
+      state.memeData = pairs;
+      renderMemes(pairs);
+    }
+  } catch(e) {
+    console.error('Erro DexScreener:', e);
+  }
+}
+
+function renderMemes(data) {
+  const container = document.getElementById('memeGrid');
+  if (!container) return;
+
+  container.innerHTML = data.map((p, i) => {
+    const price = p.priceUsd? parseFloat(p.priceUsd) : 0;
+    const change = p.priceChange?.h24 || 0;
+    const vol = p.volume?.h24 || 0;
+    const liq = p.liquidity?.usd || 0;
+    const name = p.baseToken?.name || 'Unknown';
+    const sym = p.baseToken?.symbol || '???';
+
+    return `
+      <div class="meme-card" onclick='openToken(${JSON.stringify(p).replace(/'/g,"&apos;")})'>
+        <div class="meme-top">
+          <img class="meme-logo" src="${p.info?.imageUrl || p.url}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e8f0ff%22/%3E%3C/svg%3E'" alt="">
+          <div>
+            <div class="meme-name">${name}</div>
+            <div class="meme-sym">${sym}</div>
+          </div>
+          ${i < 3? '<span class="meme-badge badge-hot">HOT</span>' : ''}
+        </div>
+        <div>
+          <span class="meme-price">$${price < 0.01? price.toFixed(8) : price.toFixed(4)}</span>
+          <span class="meme-chg ${change >= 0? 'pos' : 'neg'}">${change >= 0? '+' : ''}${change.toFixed(2)}%</span>
+        </div>
+        <div class="meme-stats">
+          <div class="meme-stat">Vol 24h<span>${fmt(vol)}</span></div>
+          <div class="meme-stat">Liq<span>${fmt(liq)}</span></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════
+   MODAL TOKEN - MANTIDO DO ORIGINAL
+═══════════════════════════════════════ */
+function openToken(pair) {
+  state.currentPair = pair;
+  document.getElementById('tokenModal').classList.add('active');
+  document.getElementById('m-logo').src = pair.info?.imageUrl || pair.url || '';
+  document.getElementById('m-name').textContent = pair.baseToken?.name || 'Unknown';
+  document.getElementById('m-sym').textContent = pair.baseToken?.symbol || '???';
+  document.getElementById('m-price').textContent = '$' + (parseFloat(pair.priceUsd) || 0).toFixed(6);
+
+  const change = pair.priceChange?.h24 || 0;
+  const chgEl = document.getElementById('m-chg');
+  chgEl.textContent = `${change >= 0? '+' : ''}${change.toFixed(2)}%`;
+  chgEl.className = `meme-chg ${change >= 0? 'pos' : 'neg'}`;
+
+  document.getElementById('m-vol').textContent = fmt(pair.volume?.h24 || 0);
+  document.getElementById('m-liq').textContent = fmt(pair.liquidity?.usd || 0);
+  document.getElementById('m-mc').textContent = fmt(pair.fdv || pair.marketCap || 0);
+  document.getElementById('m-addr').textContent = pair.baseToken?.address || '—';
+
+  // Links
+  const linksEl = document.getElementById('m-links');
+  const links = [];
+  if(pair.info?.websites?.[0]?.url) links.push(`<a href="${pair.info.websites[0].url}" target="_blank" class="modal-link web">🌐 Website</a>`);
+  if(pair.info?.socials?.find(s => s.type === 'twitter')?.url) links.push(`<a href="${pair.info.socials.find(s => s.type === 'twitter').url}" target="_blank" class="modal-link tw">𝕏 Twitter</a>`);
+  if(pair.info?.socials?.find(s => s.type === 'telegram')?.url) links.push(`<a href="${pair.info.socials.find(s => s.type === 'telegram').url}" target="_blank" class="modal-link tg">✈️ Telegram</a>`);
+  linksEl.innerHTML = links.join('');
+
+  // Chart
+  loadChart('m5');
+}
+
+function closeModal() {
+  document.getElementById('tokenModal').classList.remove('active');
+}
+
+function switchTab(el, tf) {
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  state.currentTf = tf;
+  loadChart(tf);
+}
+
+function loadChart(tf) {
+  // Simples: usa DexScreener embed
+  const chart = document.getElementById('m-chart');
+  if(!state.currentPair) return;
+
+  const chainId = state.currentPair.chainId;
+  const pairAddress = state.currentPair.pairAddress;
+
+  chart.innerHTML = `<iframe src="https://dexscreener.com/${chainId}/${pairAddress}?embed=1&theme=light&trades=0&info=0" style="width:100%;height:100%;border:none;"></iframe>`;
+}
+
+function openChartScreen() {
+  if(!state.currentPair) return;
+  const chainId = state.currentPair.chainId;
+  const pairAddress = state.currentPair.pairAddress;
+  document.getElementById('chartScreenFrame').src = `https://dexscreener.com/${chainId}/${pairAddress}?embed=1&theme=light`;
+  document.getElementById('chartScreenTitle').textContent = state.currentPair.baseToken?.symbol || 'Chart';
+  document.getElementById('chartScreen').style.display = 'flex';
+}
+
+function closeChartScreen() {
+  document.getElementById('chartScreen').style.display = 'none';
+  document.getElementById('chartScreenFrame').src = '';
+}
+
+/* ═══════════════════════════════════════
+   SEARCH - MANTIDO
+═══════════════════════════════════════ */
+let searchTimeout;
+
+function onSearch(q) {
+  clearTimeout(searchTimeout);
+  if (q.length < 2) {
+    closeResults();
+    return;
+  }
+
+  searchTimeout = setTimeout(async () => {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${q}`);
+    const data = await res.json();
+    renderSearch(data.pairs || []);
+  }, 400);
+}
+
+function showResults() {
+  const results = document.getElementById('search-results');
+  if(results.children.length > 0) results.classList.add('active');
+}
+
+function closeResults() {
+  document.getElementById('search-results').classList.remove('active');
+}
+
+function renderSearch(pairs) {
+  const container = document.getElementById('search-results');
+  if(!container) return;
+
+  if(!pairs.length) {
+    container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted)">Nenhum resultado</div>';
+    container.classList.add('active');
+    return;
+  }
+
+  container.innerHTML = pairs.slice(0, 8).map(p => `
+    <div class="sr-item" onclick='openToken(${JSON.stringify(p).replace(/'/g,"&apos;")});closeResults()'>
+      <img class="sr-logo" src="${p.info?.imageUrl || ''}" onerror="this.style.display='none'">
+      <div>
+        <div class="sr-name">${p.baseToken?.name || 'Unknown'}</div>
+        <div class="sr-pair">${p.baseToken?.symbol}/${p.quoteToken?.symbol}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="sr-price">$${(parseFloat(p.priceUsd) || 0).toFixed(6)}</div>
+        <div class="sr-chg ${(p.priceChange?.h24 || 0) >= 0? 'pos' : 'neg'}">${(p.priceChange?.h24 || 0).toFixed(2)}%</div>
+      </div>
+    </div>
+  `).join('');
+  container.classList.add('active');
+}
+
+/* ═══════════════════════════════════════
+   CHATBOT - MANTIDO
+═══════════════════════════════════════ */
+function toggleChat() {
+  const win = document.getElementById('chatWindow');
+  const badge = document.getElementById('chatBadge');
+  win.classList.toggle('open');
+  if(win.classList.contains('open')) {
+    badge.style.display = 'none';
+    if(document.getElementById('chatMessages').children.length === 0) {
+      addBotMsg('Olá! Sou o CryptoBot 🤖 Pergunte sobre preços, airdrops, alpha ou pré-vendas!');
+      showSuggestions();
+    }
+  }
+}
+
+function addBotMsg(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg bot';
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addUserMsg(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg user';
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showSuggestions() {
+  const sugs = document.getElementById('chatSugs');
+  const sugList = ['Preço BTC', 'Airdrop ativo', 'Alpha call', 'Pré-venda'];
+  sugs.innerHTML = sugList.map(s => `<button class="chat-sug" onclick="sendChat('${s}')">${s}</button>`).join('');
+}
+
+function sendChat(preset) {
+  const input = document.getElementById('chatInput');
+  const msg = preset || input.value.trim();
+  if(!msg) return;
+
+  addUserMsg(msg);
+  input.value = '';
+
+  // Typing
+  const msgs = document.getElementById('chatMessages');
+  const typing = document.createElement('div');
+  typing.className = 'chat-msg typing';
+  typing.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(() => {
+    typing.remove();
+    addBotMsg(getBotReply(msg));
+  }, 800);
+}
+
+function getBotReply(msg) {
+  const kb = (i18n[state.lang] || i18n.pt).kb;
+  for (const item of kb) {
+    if (item.k.some(k => msg.toLowerCase().includes(k))) {
+      return item.r;
+    }
+  }
+  return (i18n[state.lang] || i18n.pt).def;
+}
+
+/* ═══════════════════════════════════════
+   UTILS
+═══════════════════════════════════════ */
+const fmt = n =>
+!n? '—' :
+  n >= 1e9? '$' + (n/1e9).toFixed(2)+'B' :
+  n >= 1e6? '$' + (n/1e6).toFixed(2)+'M' :
+  n >= 1e3? '$' + (n/1e3).toFixed(2)+'K' :
+  '$' + n.toFixed(4);
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  updateInterfaceLang();
+  loadTab('news');
+  loadMemecoins();
+  setInterval(loadMemecoins, 30000);
+
+  // Click fora fecha dropdowns
+  document.addEventListener('click', (e) => {
+    if(!e.target.closest('.lang-dropdown')) closeLang();
+    if(!e.target.closest('.search-wrap')) closeResults();
+  });
+});
