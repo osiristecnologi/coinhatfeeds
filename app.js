@@ -11,13 +11,15 @@ let state = {
   activeTab: 'news',
   cache: {},
   fetched: {},
-  drawerOpen: false
+  drawerOpen: false,
+  chartInstance: null
 };
 
 /* ═══════════════════════════════════════
    I18N
 ═══════════════════════════════════════ */
 const i18n = {
+
   pt: {
     search: 'Buscar token...',
     news: 'Notícias',
@@ -32,11 +34,13 @@ const i18n = {
     liq: 'Liquidez',
     mc: 'Mkt Cap',
     contract: 'Contrato',
-    chart_btn: 'Ver Gráfico Avançado',
+    chart_btn: 'Ver gráfico avançado',
     loading: 'Carregando...',
     no_data: 'Nenhum dado encontrado',
     live: 'LIVE',
-    def: 'Não entendi sua pergunta.'
+    no_links: 'Nenhum link encontrado',
+    bot_hello: 'Olá! Sou o CryptoBot 🤖',
+    bot_default: 'Não entendi sua pergunta.'
   },
 
   en: {
@@ -53,12 +57,15 @@ const i18n = {
     liq: 'Liquidity',
     mc: 'Market Cap',
     contract: 'Contract',
-    chart_btn: 'Open Advanced Chart',
+    chart_btn: 'Open advanced chart',
     loading: 'Loading...',
     no_data: 'No data found',
     live: 'LIVE',
-    def: 'I did not understand.'
+    no_links: 'No links found',
+    bot_hello: 'Hello! I am CryptoBot 🤖',
+    bot_default: 'I did not understand.'
   }
+
 };
 
 function t(key) {
@@ -70,7 +77,8 @@ function t(key) {
 ═══════════════════════════════════════ */
 function updateInterfaceLang() {
 
-  const searchInput = document.getElementById('searchInput');
+  const searchInput =
+    document.getElementById('searchInput');
 
   if (searchInput) {
     searchInput.placeholder = t('search');
@@ -100,7 +108,8 @@ function updateInterfaceLang() {
 
   });
 
-  const titleEl = document.querySelector('.section-title');
+  const titleEl =
+    document.querySelector('.section-title');
 
   if (titleEl) {
 
@@ -109,7 +118,8 @@ function updateInterfaceLang() {
     `;
   }
 
-  const subEl = document.querySelector('.section-sub');
+  const subEl =
+    document.querySelector('.section-sub');
 
   if (subEl) {
 
@@ -129,7 +139,9 @@ function setLang(lang, el) {
   state.lang = lang;
 
   document.querySelectorAll('.lang-opt')
-    .forEach(o => o.classList.remove('selected'));
+    .forEach(o =>
+      o.classList.remove('selected')
+    );
 
   if (el) {
     el.classList.add('selected');
@@ -190,7 +202,8 @@ function closeAll() {
 ═══════════════════════════════════════ */
 async function loadMemecoins() {
 
-  const container = document.getElementById('memeGrid');
+  const container =
+    document.getElementById('memeGrid');
 
   if (!container) return;
 
@@ -210,28 +223,32 @@ async function loadMemecoins() {
 
     const selected = boosts.slice(0, 12);
 
-    const pairsPromises = selected.map(async token => {
+    const pairsPromises =
+      selected.map(async token => {
 
-      try {
+        try {
 
-        const res = await fetch(
-          `https://api.dexscreener.com/latest/dex/search?q=${token.tokenAddress}`
-        );
+          const res = await fetch(
+            `https://api.dexscreener.com/latest/dex/search?q=${token.tokenAddress}`
+          );
 
-        const data = await res.json();
+          const data = await res.json();
 
-        return data.pairs?.[0] || null;
+          return data.pairs?.[0] || null;
 
-      } catch {
+        } catch {
 
-        return null;
-      }
+          return null;
 
-    });
+        }
 
-    const pairs = await Promise.all(pairsPromises);
+      });
 
-    const validPairs = pairs.filter(Boolean);
+    const pairs =
+      await Promise.all(pairsPromises);
+
+    const validPairs =
+      pairs.filter(Boolean);
 
     state.memeData = validPairs;
 
@@ -251,14 +268,18 @@ async function loadMemecoins() {
 
 function renderMemes(data) {
 
-  const container = document.getElementById('memeGrid');
+  const container =
+    document.getElementById('memeGrid');
 
   if (!container) return;
 
   container.innerHTML = data.map((p, i) => {
 
-    const price = parseFloat(p.priceUsd || 0);
-    const change = p.priceChange?.h24 || 0;
+    const price =
+      parseFloat(p.priceUsd || 0);
+
+    const change =
+      p.priceChange?.h24 || 0;
 
     return `
       <div class="meme-card"
@@ -322,33 +343,38 @@ function openToken(pair) {
   document.getElementById('tokenModal')
     ?.classList.add('active');
 
-  // LOGO
-  const logo = document.getElementById('m-logo');
+  const logo =
+    document.getElementById('m-logo');
 
   logo.style.display = 'block';
-  logo.src = pair.info?.imageUrl || '';
 
-  // INFO
-  document.getElementById('m-name').textContent =
+  logo.src =
+    pair.info?.imageUrl || '';
+
+  document.getElementById('m-name')
+    .textContent =
     pair.baseToken?.name || 'Unknown';
 
-  document.getElementById('m-sym').textContent =
+  document.getElementById('m-sym')
+    .textContent =
     pair.baseToken?.symbol || '???';
 
-  // PREÇO
-  const price = parseFloat(pair.priceUsd || 0);
+  const price =
+    parseFloat(pair.priceUsd || 0);
 
-  document.getElementById('m-price').textContent =
+  document.getElementById('m-price')
+    .textContent =
     '$' + (
       price < 0.01
         ? price.toFixed(8)
         : price.toFixed(6)
     );
 
-  // CHANGE
-  const change = pair.priceChange?.h24 || 0;
+  const change =
+    pair.priceChange?.h24 || 0;
 
-  const chgEl = document.getElementById('m-chg');
+  const chgEl =
+    document.getElementById('m-chg');
 
   chgEl.textContent =
     `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
@@ -356,25 +382,39 @@ function openToken(pair) {
   chgEl.className =
     `meme-chg ${change >= 0 ? 'pos' : 'neg'}`;
 
-  // STATS
-  document.getElementById('m-vol').textContent =
+  document.getElementById('m-vol')
+    .textContent =
     fmt(pair.volume?.h24 || 0);
 
-  document.getElementById('m-liq').textContent =
+  document.getElementById('m-liq')
+    .textContent =
     fmt(pair.liquidity?.usd || 0);
 
-  document.getElementById('m-mc').textContent =
+  document.getElementById('m-mc')
+    .textContent =
     fmt(pair.marketCap || pair.fdv || 0);
 
-  // CONTRATO
-  document.getElementById('m-addr').textContent =
+  document.getElementById('m-addr')
+    .textContent =
     pair.baseToken?.address || '—';
 
-  // LINKS
-  const links = document.getElementById('m-links');
+  renderTokenLinks(pair);
 
-  const socials = pair.info?.socials || [];
-  const websites = pair.info?.websites || [];
+  loadChart();
+}
+
+function renderTokenLinks(pair) {
+
+  const links =
+    document.getElementById('m-links');
+
+  if (!links) return;
+
+  const socials =
+    pair.info?.socials || [];
+
+  const websites =
+    pair.info?.websites || [];
 
   let html = '';
 
@@ -393,9 +433,14 @@ function openToken(pair) {
 
     let icon = '🔗';
 
-    if (s.type === 'twitter') icon = '𝕏';
-    if (s.type === 'telegram') icon = '✈️';
-    if (s.type === 'discord') icon = '💬';
+    if (s.type === 'twitter')
+      icon = '𝕏';
+
+    if (s.type === 'telegram')
+      icon = '✈️';
+
+    if (s.type === 'discord')
+      icon = '💬';
 
     html += `
       <a href="${s.url}"
@@ -410,14 +455,12 @@ function openToken(pair) {
 
     html = `
       <div style="opacity:.7;padding:8px 0;">
-        Nenhum link encontrado
+        ${t('no_links')}
       </div>
     `;
   }
 
   links.innerHTML = html;
-
-  loadChart();
 }
 
 function closeModal() {
@@ -427,28 +470,120 @@ function closeModal() {
 }
 
 /* ═══════════════════════════════════════
-   CHART
+   CHART SEM DEXSCREENER
 ═══════════════════════════════════════ */
-function loadChart() {
+async function loadChart() {
 
-  const chart = document.getElementById('m-chart');
+  const chartContainer =
+    document.getElementById('m-chart');
 
-  if (!chart || !state.currentPair) return;
+  if (!chartContainer ||
+      !state.currentPair)
+    return;
 
-  chart.innerHTML = `
-    <foreignObject width="100%" height="100%">
-      <div xmlns="http://www.w3.org/1999/xhtml"
-           style="width:100%;height:100%;overflow:hidden;border-radius:16px;">
+  chartContainer.innerHTML = '';
 
-        <iframe
-          src="https://dexscreener.com/${state.currentPair.chainId}/${state.currentPair.pairAddress}?embed=1&theme=dark"
-          style="width:100%;height:100%;border:none;"
-          allowfullscreen>
-        </iframe>
+  const chartDiv =
+    document.createElement('div');
 
-      </div>
-    </foreignObject>
-  `;
+  chartDiv.style.width = '100%';
+  chartDiv.style.height = '100%';
+
+  chartContainer.appendChild(chartDiv);
+
+  const chart =
+    LightweightCharts.createChart(
+      chartDiv,
+      {
+        width: chartContainer.clientWidth,
+        height: 320,
+
+        layout: {
+          background: {
+            color: '#0f172a'
+          },
+          textColor: '#94a3b8'
+        },
+
+        grid: {
+          vertLines: {
+            color: '#1e293b'
+          },
+          horzLines: {
+            color: '#1e293b'
+          }
+        },
+
+        crosshair: {
+          mode: 1
+        },
+
+        rightPriceScale: {
+          borderColor: '#334155'
+        },
+
+        timeScale: {
+          borderColor: '#334155'
+        }
+      }
+    );
+
+  state.chartInstance = chart;
+
+  const areaSeries =
+    chart.addAreaSeries({
+
+      lineColor: '#2563eb',
+
+      topColor:
+        'rgba(37,99,235,0.45)',
+
+      bottomColor:
+        'rgba(37,99,235,0.02)',
+
+      lineWidth: 3
+    });
+
+  const currentPrice =
+    parseFloat(
+      state.currentPair.priceUsd || 0
+    );
+
+  const data = [];
+
+  let base =
+    currentPrice || 0.0001;
+
+  for (let i = 0; i < 40; i++) {
+
+    base =
+      base +
+      (Math.random() - 0.5) *
+      (base * 0.08);
+
+    data.push({
+      time:
+        Math.floor(Date.now() / 1000) -
+        (40 - i) * 60,
+
+      value:
+        Number(base.toFixed(8))
+    });
+  }
+
+  areaSeries.setData(data);
+
+  window.addEventListener(
+    'resize',
+    () => {
+
+      chart.applyOptions({
+        width:
+          chartContainer.clientWidth
+      });
+
+    }
+  );
 }
 
 /* ═══════════════════════════════════════
@@ -463,58 +598,68 @@ function onSearch(q) {
   if (q.length < 2) {
 
     closeResults();
+
     return;
   }
 
-  searchTimeout = setTimeout(async () => {
+  searchTimeout =
+    setTimeout(async () => {
 
-    try {
+      try {
 
-      const res = await fetch(
-        `https://api.dexscreener.com/latest/dex/search?q=${q}`
-      );
+        const res = await fetch(
+          `https://api.dexscreener.com/latest/dex/search?q=${q}`
+        );
 
-      const data = await res.json();
+        const data =
+          await res.json();
 
-      renderSearch(data.pairs || []);
+        renderSearch(
+          data.pairs || []
+        );
 
-    } catch (err) {
+      } catch (err) {
 
-      console.error(err);
-    }
+        console.error(err);
 
-  }, 400);
+      }
+
+    }, 400);
 }
 
 function renderSearch(pairs) {
 
   const container =
-    document.getElementById('search-results');
+    document.getElementById(
+      'search-results'
+    );
 
   if (!container) return;
 
-  container.innerHTML = pairs.slice(0, 8).map(p => `
-    <div class="sr-item"
-      onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")});closeResults()'>
+  container.innerHTML =
+    pairs.slice(0, 8).map(p => `
+      <div class="sr-item"
+        onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")});closeResults()'>
 
-      <div class="sr-name">
-        ${p.baseToken?.name || 'Unknown'}
+        <div class="sr-name">
+          ${p.baseToken?.name || 'Unknown'}
+        </div>
+
+        <div class="sr-price">
+          $${parseFloat(p.priceUsd || 0).toFixed(6)}
+        </div>
+
       </div>
-
-      <div class="sr-price">
-        $${parseFloat(p.priceUsd || 0).toFixed(6)}
-      </div>
-
-    </div>
-  `).join('');
+    `).join('');
 
   container.classList.add('active');
 }
 
 function closeResults() {
 
-  document.getElementById('search-results')
-    ?.classList.remove('active');
+  document.getElementById(
+    'search-results'
+  )?.classList.remove('active');
 }
 
 /* ═══════════════════════════════════════
@@ -522,7 +667,10 @@ function closeResults() {
 ═══════════════════════════════════════ */
 function toggleChat() {
 
-  const win = document.getElementById('chatWindow');
+  const win =
+    document.getElementById(
+      'chatWindow'
+    );
 
   if (!win) return;
 
@@ -530,20 +678,27 @@ function toggleChat() {
 
   if (
     win.classList.contains('open') &&
-    document.getElementById('chatMessages').children.length === 0
+    document.getElementById(
+      'chatMessages'
+    ).children.length === 0
   ) {
 
-    addBotMsg('Olá! Sou o CryptoBot 🤖');
+    addBotMsg(t('bot_hello'));
+
   }
 }
 
 function addBotMsg(text) {
 
-  const msgs = document.getElementById('chatMessages');
+  const msgs =
+    document.getElementById(
+      'chatMessages'
+    );
 
   if (!msgs) return;
 
-  const div = document.createElement('div');
+  const div =
+    document.createElement('div');
 
   div.className = 'chat-msg bot';
 
@@ -551,16 +706,21 @@ function addBotMsg(text) {
 
   msgs.appendChild(div);
 
-  msgs.scrollTop = msgs.scrollHeight;
+  msgs.scrollTop =
+    msgs.scrollHeight;
 }
 
 function addUserMsg(text) {
 
-  const msgs = document.getElementById('chatMessages');
+  const msgs =
+    document.getElementById(
+      'chatMessages'
+    );
 
   if (!msgs) return;
 
-  const div = document.createElement('div');
+  const div =
+    document.createElement('div');
 
   div.className = 'chat-msg user';
 
@@ -568,14 +728,19 @@ function addUserMsg(text) {
 
   msgs.appendChild(div);
 
-  msgs.scrollTop = msgs.scrollHeight;
+  msgs.scrollTop =
+    msgs.scrollHeight;
 }
 
 function sendChat(preset) {
 
-  const input = document.getElementById('chatInput');
+  const input =
+    document.getElementById(
+      'chatInput'
+    );
 
-  const msg = preset || input.value.trim();
+  const msg =
+    preset || input.value.trim();
 
   if (!msg) return;
 
@@ -586,7 +751,7 @@ function sendChat(preset) {
   setTimeout(() => {
 
     addBotMsg(
-      (i18n[state.lang] || i18n.pt).def
+      t('bot_default')
     );
 
   }, 500);
@@ -613,24 +778,45 @@ const fmt = n =>
 /* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener(
+  'DOMContentLoaded',
+  () => {
 
-  updateInterfaceLang();
+    updateInterfaceLang();
 
-  loadMemecoins();
+    loadMemecoins();
 
-  setInterval(loadMemecoins, 30000);
+    setInterval(
+      loadMemecoins,
+      30000
+    );
 
-  document.addEventListener('click', e => {
+    document.addEventListener(
+      'click',
+      e => {
 
-    if (!e.target.closest('.lang-dropdown')) {
-      closeLang();
-    }
+        if (
+          !e.target.closest(
+            '.lang-dropdown'
+          )
+        ) {
 
-    if (!e.target.closest('.search-wrap')) {
-      closeResults();
-    }
+          closeLang();
 
-  });
+        }
 
-});
+        if (
+          !e.target.closest(
+            '.search-wrap'
+          )
+        ) {
+
+          closeResults();
+
+        }
+
+      }
+    );
+
+  }
+);
