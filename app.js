@@ -15,139 +15,46 @@ let state = {
 };
 
 /* ═══════════════════════════════════════
-   I18N - FUSÃO: ADICIONADO
+   I18N
 ═══════════════════════════════════════ */
 const i18n = {
   pt: {
-    'search': 'Buscar token...',
-    'news': 'Notícias',
-    'presales': 'Pré-vendas',
-    'alpha': 'Alpha',
-    'airdrops': 'Airdrops',
-    'sponsors': 'Parceiros',
-    'refresh': 'Atualizar',
-    'memecoins_title': 'Memecoins em Destaque',
-    'memecoins_sub': 'Cotações e gráficos em tempo real',
-    'vol': 'Vol 24h',
-    'liq': 'Liquidez',
-    'mc': 'Mkt Cap',
-    'contract': 'Contrato',
-    'chart_btn': 'Ver Gráfico Avançado',
-    'loading': 'Carregando...',
-    'no_data': 'Nenhum dado encontrado',
-    'live': 'LIVE',
+    search: 'Buscar token...',
+    news: 'Notícias',
+    presales: 'Pré-vendas',
+    alpha: 'Alpha',
+    airdrops: 'Airdrops',
+    sponsors: 'Parceiros',
+    refresh: 'Atualizar',
+    memecoins_title: 'Memecoins em Destaque',
+    memecoins_sub: 'Cotações e gráficos em tempo real',
+    vol: 'Vol 24h',
+    liq: 'Liquidez',
+    mc: 'Mkt Cap',
+    contract: 'Contrato',
+    chart_btn: 'Ver Gráfico Avançado',
+    loading: 'Carregando...',
+    no_data: 'Nenhum dado encontrado',
+    live: 'LIVE',
     kb: [
-      {k: ['preço','price','cotação'], r: 'Consulte o preço em tempo real no card da memecoin. Clique para ver gráfico.'},
-      {k: ['airdrop','grátis'], r: 'Confira a aba Airdrops no menu ☰ para campanhas ativas.'},
-      {k: ['alpha','call'], r: 'Aba Alpha traz calls exclusivas da comunidade.'},
-      {k: ['presale','pré-venda'], r: 'Pré-vendas listadas na aba Pré-vendas com links oficiais.'}
+      {
+        k: ['preço', 'price', 'cotação'],
+        r: 'Consulte o preço em tempo real no card da memecoin.'
+      },
+      {
+        k: ['airdrop', 'grátis'],
+        r: 'Confira a aba Airdrops no menu ☰.'
+      },
+      {
+        k: ['alpha', 'call'],
+        r: 'Aba Alpha traz calls exclusivas.'
+      },
+      {
+        k: ['presale', 'pré-venda'],
+        r: 'Veja as pré-vendas na aba Pré-vendas.'
+      }
     ],
-    def: 'Não entendi. Pergunte sobre preço, airdrop, alpha ou pré-venda.'
-  },
-  en: {
-    'search': 'Search token...',
-    'news': 'News',
-    'presales': 'Presales',
-    'alpha': 'Alpha',
-    'airdrops': 'Airdrops',
-    'sponsors': 'Partners',
-    'refresh': 'Refresh',
-    'memecoins_title': 'Trending Memecoins',
-    'memecoins_sub': 'Real-time quotes and charts',
-    'vol': 'Vol 24h',
-    'liq': 'Liquidity',
-    'mc': 'Mkt Cap',
-    'contract': 'Contract',
-    'chart_btn': 'Advanced Chart',
-    'loading': 'Loading...',
-    'no_data': 'No data found',
-    'live': 'LIVE',
-    kb: [],
-    def: 'I did not understand. Ask about price, airdrop, alpha or presale.'
-  },
-  es: {
-    'search': 'Buscar token...',
-    'news': 'Noticias',
-    'presales': 'Pre-ventas',
-    'alpha': 'Alpha',
-    'airdrops': 'Airdrops',
-    'sponsors': 'Socios',
-    'refresh': 'Actualizar',
-    'memecoins_title': 'Memecoins Destacadas',
-    'memecoins_sub': 'Cotizaciones y gráficos en tiempo real',
-    'vol': 'Vol 24h',
-    'liq': 'Liquidez',
-    'mc': 'Cap Mercado',
-    'contract': 'Contrato',
-    'chart_btn': 'Gráfico Avanzado',
-    'loading': 'Cargando...',
-    'no_data': 'Sin datos',
-    'live': 'VIVO',
-    kb: [],
-    def: 'No entendí. Pregunta sobre precio, airdrop, alpha o preventa.'
-  },
-  zh: {
-    'search': '搜索代币...',
-    'news': '新闻',
-    'presales': '预售',
-    'alpha': 'Alpha',
-    'airdrops': '空投',
-    'sponsors': '合作伙伴',
-    'refresh': '刷新',
-    'memecoins_title': '热门Memecoin',
-    'memecoins_sub': '实时报价和图表',
-    'vol': '24h量',
-    'liq': '流动性',
-    'mc': '市值',
-    'contract': '合约',
-    'chart_btn': '高级图表',
-    'loading': '加载中...',
-    'no_data': '未找到数据',
-    'live': '直播',
-    kb: [],
-    def: '我不明白。询问价格、空投、alpha或预售。'
-  },
-  ja: {
-    'search': 'トークンを検索...',
-    'news': 'ニュース',
-    'presales': 'プレセール',
-    'alpha': 'Alpha',
-    'airdrops': 'エアドロップ',
-    'sponsors': 'パートナー',
-    'refresh': '更新',
-    'memecoins_title': '注目ミームコイン',
-    'memecoins_sub': 'リアルタイム相場とチャート',
-    'vol': '24h出来高',
-    'liq': '流動性',
-    'mc': '時価総額',
-    'contract': 'コントラクト',
-    'chart_btn': '詳細チャート',
-    'loading': '読み込み中...',
-    'no_data': 'データなし',
-    'live': 'LIVE',
-    kb: [],
-    def: '理解できませんでした。価格、エアドロップ、アルファ、プレセールについて質問してください。'
-  },
-  ru: {
-    'search': 'Поиск токена...',
-    'news': 'Новости',
-    'presales': 'Пресейлы',
-    'alpha': 'Alpha',
-    'airdrops': 'Аирдропы',
-    'sponsors': 'Партнеры',
-    'refresh': 'Обновить',
-    'memecoins_title': 'Топ Мемкоины',
-    'memecoins_sub': 'Котировки и графики в реальном времени',
-    'vol': 'Объем 24ч',
-    'liq': 'Ликвидность',
-    'mc': 'Капитализация',
-    'contract': 'Контракт',
-    'chart_btn': 'Продвинутый график',
-    'loading': 'Загрузка...',
-    'no_data': 'Нет данных',
-    'live': 'LIVE',
-    kb: [],
-    def: 'Не понял. Спросите о цене, аирдропе, альфе или пресейле.'
+    def: 'Não entendi. Pergunte sobre preço, alpha, airdrop ou pré-venda.'
   }
 };
 
@@ -155,75 +62,99 @@ function t(key) {
   return (i18n[state.lang] || i18n.pt)[key] || key;
 }
 
-// FUSÃO: Atualiza textos da interface
+/* ═══════════════════════════════════════
+   INTERFACE LANG
+═══════════════════════════════════════ */
 function updateInterfaceLang() {
-  const els = {
-    'searchInput': 'placeholder',
-    'dt-news': 'textContent',
-    'dt-presales': 'textContent',
-    'dt-alpha': 'textContent',
-    'dt-airdrops': 'textContent',
-    'dt-sponsors': 'textContent',
-    'nt-refresh': 'textContent',
-    'nt-vol': 'textContent',
-    'nt-liq': 'textContent',
-    'nt-mc': 'textContent',
-    'nt-contract': 'textContent',
-    'dexBtnLabel': 'textContent'
+
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.placeholder = t('search');
+  }
+
+  const map = {
+    'dt-news': 'news',
+    'dt-presales': 'presales',
+    'dt-alpha': 'alpha',
+    'dt-airdrops': 'airdrops',
+    'dt-sponsors': 'sponsors',
+    'nt-refresh': 'refresh',
+    'nt-vol': 'vol',
+    'nt-liq': 'liq',
+    'nt-mc': 'mc',
+    'nt-contract': 'contract',
+    'dexBtnLabel': 'chart_btn'
   };
 
-  if(document.getElementById('searchInput')) document.getElementById('searchInput').placeholder = t('search');
-  if(document.getElementById('dt-news')) document.getElementById('dt-news').textContent = t('news');
-  if(document.getElementById('dt-presales')) document.getElementById('dt-presales').textContent = t('presales');
-  if(document.getElementById('dt-alpha')) document.getElementById('dt-alpha').textContent = t('alpha');
-  if(document.getElementById('dt-airdrops')) document.getElementById('dt-airdrops').textContent = t('airdrops');
-  if(document.getElementById('dt-sponsors')) document.getElementById('dt-sponsors').textContent = t('sponsors');
-  if(document.getElementById('nt-refresh')) document.getElementById('nt-refresh').textContent = t('refresh');
-  if(document.getElementById('nt-vol')) document.getElementById('nt-vol').textContent = t('vol');
-  if(document.getElementById('nt-liq')) document.getElementById('nt-liq').textContent = t('liq');
-  if(document.getElementById('nt-mc')) document.getElementById('nt-mc').textContent = t('mc');
-  if(document.getElementById('nt-contract')) document.getElementById('nt-contract').textContent = t('contract');
-  if(document.getElementById('dexBtnLabel')) document.getElementById('dexBtnLabel').textContent = t('chart_btn');
+  Object.entries(map).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = t(key);
+  });
 
-  // Atualiza títulos
   const titleEl = document.querySelector('.section-title');
-  if(titleEl) titleEl.childNodes[1].nodeValue = ' ' + t('memecoins_title');
+  if (titleEl) {
+    titleEl.innerHTML = `🔥 ${t('memecoins_title')}`;
+  }
+
   const subEl = document.querySelector('.section-sub');
-  if(subEl) subEl.innerHTML = `${t('memecoins_sub')} · <span class="live"><span class="live-dot"></span>${t('live')}</span>`;
+  if (subEl) {
+    subEl.innerHTML = `
+      ${t('memecoins_sub')}
+      ·
+      <span class="live">
+        <span class="live-dot"></span>
+        ${t('live')}
+      </span>
+    `;
+  }
 }
 
 function setLang(lang, el) {
   state.lang = lang;
-  state.fetched = {}; // Limpa cache ao trocar idioma
-  document.querySelectorAll('.lang-opt').forEach(o => o.classList.remove('selected'));
-  if(el) el.classList.add('selected');
+  state.fetched = {};
+
+  document.querySelectorAll('.lang-opt')
+    .forEach(o => o.classList.remove('selected'));
+
+  if (el) el.classList.add('selected');
+
   updateInterfaceLang();
   closeLang();
-  // Recarrega aba ativa com novo idioma
   loadTab(state.activeTab, true);
 }
 
 function toggleLang() {
-  document.getElementById('langMenu').classList.toggle('active');
+  document.getElementById('langMenu')
+    ?.classList.toggle('active');
 }
 
 function closeLang() {
-  document.getElementById('langMenu').classList.remove('active');
+  document.getElementById('langMenu')
+    ?.classList.remove('active');
 }
 
 /* ═══════════════════════════════════════
-   DRAWER - FUSÃO: ADICIONADO
+   DRAWER
 ═══════════════════════════════════════ */
 function openDrawer() {
-  document.getElementById('drawer').classList.add('open');
-  document.getElementById('overlay').classList.add('active');
+  document.getElementById('drawer')
+    ?.classList.add('open');
+
+  document.getElementById('overlay')
+    ?.classList.add('active');
+
   state.drawerOpen = true;
-  loadTab(state.activeTab); // Carrega tab ativa ao abrir
+
+  loadTab(state.activeTab);
 }
 
 function closeDrawer() {
-  document.getElementById('drawer').classList.remove('open');
-  document.getElementById('overlay').classList.remove('active');
+  document.getElementById('drawer')
+    ?.classList.remove('open');
+
+  document.getElementById('overlay')
+    ?.classList.remove('active');
+
   state.drawerOpen = false;
 }
 
@@ -235,201 +166,233 @@ function closeAll() {
 }
 
 function switchDrawerTab(tab, el) {
-  document.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+
+  document.querySelectorAll('.dtab')
+    .forEach(t => t.classList.remove('active'));
+
   el.classList.add('active');
+
   state.activeTab = tab;
+
   loadTab(tab);
 }
 
 /* ═══════════════════════════════════════
-   FETCH GENERIC
+   API FETCH
 ═══════════════════════════════════════ */
 async function apiFetch(endpoint, timeout = 8000) {
+
   try {
+
     const res = await fetch(`${API}/${endpoint}`, {
       signal: AbortSignal.timeout(timeout)
     });
-    if (!res.ok) throw new Error('fail');
+
+    if (!res.ok) {
+      throw new Error('API Error');
+    }
+
     const data = await res.json();
+
     return data.data || data || [];
+
   } catch (e) {
+
     console.error('API Error:', e);
-    return null;
+
+    return [];
+
   }
 }
 
 /* ═══════════════════════════════════════
-   TABS LOADER - FUSÃO: COM LANG
+   LOAD TAB
 ═══════════════════════════════════════ */
 async function loadTab(tab, force = false) {
+
   const cacheKey = `${tab}_${state.lang}`;
 
-  if (state.fetched[cacheKey] &&!force) {
+  if (state.fetched[cacheKey] && !force) {
     return renderTab(tab, state.cache[cacheKey]);
   }
 
   showDrawerLoading();
 
   let data = [];
-  const langParam = `?lang=${state.lang}`;
 
-  switch (tab) {
-    case 'news':
-      data = await apiFetch(`news${langParam}`);
-      break;
-    case 'presales':
-      data = await apiFetch(`presales${langParam}`);
-      break;
-    case 'alpha':
-      data = await apiFetch(`alpha${langParam}`);
-      break;
-    case 'airdrops':
-      data = await apiFetch(`airdrops${langParam}`);
-      break;
-    case 'sponsors':
-      data = await apiFetch(`sponsors${langParam}`);
-      break;
+  try {
+
+    data = await apiFetch(`${tab}?lang=${state.lang}`);
+
+  } catch (err) {
+
+    console.error(err);
+
   }
 
-  state.cache[cacheKey] = data || [];
+  state.cache[cacheKey] = data;
   state.fetched[cacheKey] = true;
 
   renderTab(tab, data);
 }
 
 function showDrawerLoading() {
+
   const container = document.getElementById('drawerBody');
-  if (container) {
-    container.innerHTML = `
-      <div class="news-skeleton"><div class="sk sk-img"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div></div>
-      <div class="news-skeleton"><div class="sk sk-img"></div><div class="sk sk-line"></div><div class="sk sk-line short"></div></div>
-    `;
-  }
+
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="loading-box">
+      ${t('loading')}
+    </div>
+  `;
 }
 
 /* ═══════════════════════════════════════
-   RENDER CONTROLLER - FUSÃO: TELA CHEIA
+   RENDER TAB
 ═══════════════════════════════════════ */
 function renderTab(tab, data) {
+
   const container = document.getElementById('drawerBody');
+
   if (!container) return;
 
-  if (!data || data.length === 0) {
+  if (!data || !data.length) {
+
     container.innerHTML = `
       <div class="empty-state">
-        <div class="emoji">📭</div>
-        <p>${t('no_data')}</p>
+        📭 ${t('no_data')}
       </div>
     `;
+
     return;
   }
 
-  const map = {
-    news: renderNews,
-    presales: renderPresales,
-    alpha: renderAlpha,
-    airdrops: renderAirdrops,
-    sponsors: renderSponsors
-  };
+  switch (tab) {
 
-  map[tab]?.(data, container);
+    case 'news':
+      renderNews(data, container);
+      break;
+
+    case 'presales':
+      renderPresales(data, container);
+      break;
+
+    case 'alpha':
+      renderAlpha(data, container);
+      break;
+
+    case 'airdrops':
+      renderAirdrops(data, container);
+      break;
+
+    case 'sponsors':
+      renderSponsors(data, container);
+      break;
+  }
 }
 
 /* ═══════════════════════════════════════
-   RENDER NEWS - FUSÃO: TELA CHEIA
+   RENDERS
 ═══════════════════════════════════════ */
 function renderNews(data, container) {
+
   container.innerHTML = data.map(news => `
-    <div class="news-card" onclick="window.open('${news.url || '#'}', '_blank')">
-      ${news.image? `<img class="news-img" src="${news.image}" onerror="this.style.display='none'" alt="">` : ''}
+    <div class="news-card"
+      onclick="window.open('${news.url || '#'}','_blank')">
+
+      ${news.image ? `
+        <img class="news-img"
+          src="${news.image}"
+          onerror="this.style.display='none'">
+      ` : ''}
+
       <div class="news-info">
-        <div class="news-source" style="color:var(--blue)">${news.source || 'CoinHatFeeds'}</div>
-        <div class="news-title">${news.title}</div>
-        <div class="news-date">${new Date(news.publishedAt || Date.now()).toLocaleDateString(state.lang === 'pt'? 'pt-BR' : 'en-US')}</div>
+
+        <div class="news-source">
+          ${news.source || 'CoinHat'}
+        </div>
+
+        <div class="news-title">
+          ${news.title || ''}
+        </div>
+
       </div>
     </div>
   `).join('');
 }
 
-/* ═══════════════════════════════════════
-   RENDER PRESALES - FUSÃO: TELA CHEIA
-═══════════════════════════════════════ */
 function renderPresales(data, container) {
+
   container.innerHTML = data.map(p => `
     <div class="presale-card">
-      <div class="presale-header">
-        <img class="presale-logo" src="${p.logo || p.image}" onerror="this.style.display='none'" alt="">
-        <div>
-          <div class="presale-name">${p.name}</div>
-          <div class="presale-chain">${p.chain || 'BSC'}</div>
-        </div>
-        <span class="status-badge status-${p.status || 'active'}">${p.status || 'active'}</span>
+
+      <div class="presale-name">
+        ${p.name || 'Unknown'}
       </div>
-      <div class="presale-progress">
-        <div class="presale-progress-fill" style="width:${p.progress || 0}%"></div>
+
+      <div class="presale-chain">
+        ${p.chain || 'BSC'}
       </div>
-      <div class="presale-meta">
-        <span>Arrecadado: <strong>${fmt(p.raised || 0)}</strong></span>
-        <span>Meta: <strong>${fmt(p.target || 0)}</strong></span>
-      </div>
+
     </div>
   `).join('');
 }
 
-/* ═══════════════════════════════════════
-   RENDER ALPHA - FUSÃO: TELA CHEIA
-═══════════════════════════════════════ */
 function renderAlpha(data, container) {
+
   container.innerHTML = data.map(a => `
     <div class="alpha-card">
-      <div class="alpha-tag">${a.tag || 'ALPHA'}</div>
-      <div class="alpha-title">${a.title}</div>
-      <div class="alpha-body">${a.body || a.description}</div>
-      <span class="risk-badge risk-${a.risk || 'medium'}">${a.risk || 'MEDIUM'} RISK</span>
+
+      <div class="alpha-title">
+        ${a.title || 'Alpha'}
+      </div>
+
+      <div class="alpha-body">
+        ${a.body || a.description || ''}
+      </div>
+
     </div>
   `).join('');
 }
 
-/* ═══════════════════════════════════════
-   RENDER AIRDROPS - FUSÃO: TELA CHEIA
-═══════════════════════════════════════ */
 function renderAirdrops(data, container) {
+
   container.innerHTML = data.map(a => `
     <div class="airdrop-card">
-      <div class="airdrop-header">
-        <img class="airdrop-logo" src="${a.logo || a.image}" onerror="this.style.display='none'" alt="">
-        <div class="airdrop-name">${a.name}</div>
+
+      <div class="airdrop-name">
+        ${a.name || 'Airdrop'}
       </div>
+
       <div class="airdrop-reward">
-        <span class="airdrop-reward-amount">${a.reward || '???'} ${a.token || ''}</span>
-        <span class="airdrop-reward-usd">≈ ${fmt(a.usdValue || 0)}</span>
+        ${a.reward || '???'}
       </div>
-      ${(a.tasks || []).map(task => `<div class="airdrop-task">✓ ${task}</div>`).join('')}
-      <a href="${a.link || '#'}" target="_blank" class="airdrop-link">Participar →</a>
+
     </div>
   `).join('');
 }
 
-/* ═══════════════════════════════════════
-   RENDER SPONSORS - FUSÃO: TELA CHEIA
-═══════════════════════════════════════ */
 function renderSponsors(data, container) {
+
   container.innerHTML = data.map(s => `
-    <div class="sponsor-card ${s.tier === 'gold'? 'gold' : ''}" onclick="window.open('${s.url || '#'}', '_blank')">
-      <img class="sponsor-logo" src="${s.logo}" onerror="this.style.display='none'" alt="">
-      <div class="sponsor-info">
-        <div class="sponsor-name">${s.name}</div>
-        <div class="sponsor-tag">${s.description || s.tag}</div>
+    <div class="sponsor-card"
+      onclick="window.open('${s.url || '#'}','_blank')">
+
+      <div class="sponsor-name">
+        ${s.name || 'Sponsor'}
       </div>
-      <span class="sponsor-badge-tier tier-${s.tier || 'silver'}">${s.tier || 'SILVER'}</span>
+
     </div>
   `).join('');
 }
 
 /* ═══════════════════════════════════════
-   MEMECOINS - MANTIDO DO ORIGINAL
+   MEMECOINS
 ═══════════════════════════════════════ */
 async function loadMemecoins() {
+
   const container = document.getElementById('memeGrid');
 
   if (!container) return;
@@ -442,17 +405,14 @@ async function loadMemecoins() {
 
   try {
 
-    // PEGA TOKENS BOOSTADOS
     const boostRes = await fetch(
       'https://api.dexscreener.com/token-boosts/latest/v1'
     );
 
     const boosts = await boostRes.json();
 
-    // PEGA SOMENTE PRIMEIROS
     const selected = boosts.slice(0, 12);
 
-    // AGORA BUSCA DADOS REAIS DOS PAIRS
     const pairsPromises = selected.map(async token => {
 
       try {
@@ -463,10 +423,12 @@ async function loadMemecoins() {
 
         const data = await res.json();
 
-        return data.pairs?.[0];
+        return data.pairs?.[0] || null;
 
       } catch {
+
         return null;
+
       }
 
     });
@@ -490,236 +452,359 @@ async function loadMemecoins() {
     `;
   }
 }
-  }
-}
 
 function renderMemes(data) {
+
   const container = document.getElementById('memeGrid');
+
   if (!container) return;
 
+  if (!data.length) {
+
+    container.innerHTML = `
+      <div class="error-box">
+        Nenhuma memecoin encontrada
+      </div>
+    `;
+
+    return;
+  }
+
   container.innerHTML = data.map((p, i) => {
-    const price = p.priceUsd? parseFloat(p.priceUsd) : 0;
+
+    const price = parseFloat(p.priceUsd || 0);
     const change = p.priceChange?.h24 || 0;
     const vol = p.volume?.h24 || 0;
     const liq = p.liquidity?.usd || 0;
-    const name = p.baseToken?.name || 'Unknown';
-    const sym = p.baseToken?.symbol || '???';
 
     return `
-      <div class="meme-card" onclick='openToken(${JSON.stringify(p).replace(/'/g,"&apos;")})'>
+      <div class="meme-card"
+        onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
+
         <div class="meme-top">
-          <img class="meme-logo" src="${p.info?.imageUrl || p.url}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e8f0ff%22/%3E%3C/svg%3E'" alt="">
+
+          <img
+            class="meme-logo"
+            src="${p.info?.imageUrl || ''}"
+            onerror="this.style.display='none'"
+          >
+
           <div>
-            <div class="meme-name">${name}</div>
-            <div class="meme-sym">${sym}</div>
+
+            <div class="meme-name">
+              ${p.baseToken?.name || 'Unknown'}
+            </div>
+
+            <div class="meme-sym">
+              ${p.baseToken?.symbol || '???'}
+            </div>
+
           </div>
-          ${i < 3? '<span class="meme-badge badge-hot">HOT</span>' : ''}
+
+          ${i < 3
+            ? '<span class="meme-badge badge-hot">HOT</span>'
+            : ''
+          }
+
         </div>
+
         <div>
-          <span class="meme-price">$${price < 0.01? price.toFixed(8) : price.toFixed(4)}</span>
-          <span class="meme-chg ${change >= 0? 'pos' : 'neg'}">${change >= 0? '+' : ''}${change.toFixed(2)}%</span>
+
+          <span class="meme-price">
+            $${price < 0.01
+              ? price.toFixed(8)
+              : price.toFixed(4)}
+          </span>
+
+          <span class="meme-chg ${change >= 0 ? 'pos' : 'neg'}">
+            ${change >= 0 ? '+' : ''}
+            ${change.toFixed(2)}%
+          </span>
+
         </div>
+
         <div class="meme-stats">
-          <div class="meme-stat">Vol 24h<span>${fmt(vol)}</span></div>
-          <div class="meme-stat">Liq<span>${fmt(liq)}</span></div>
+
+          <div class="meme-stat">
+            Vol
+            <span>${fmt(vol)}</span>
+          </div>
+
+          <div class="meme-stat">
+            Liq
+            <span>${fmt(liq)}</span>
+          </div>
+
         </div>
+
       </div>
     `;
+
   }).join('');
 }
 
 /* ═══════════════════════════════════════
-   MODAL TOKEN - MANTIDO DO ORIGINAL
+   TOKEN MODAL
 ═══════════════════════════════════════ */
 function openToken(pair) {
+
   state.currentPair = pair;
-  document.getElementById('tokenModal').classList.add('active');
-  document.getElementById('m-logo').src = pair.info?.imageUrl || pair.url || '';
-  document.getElementById('m-name').textContent = pair.baseToken?.name || 'Unknown';
-  document.getElementById('m-sym').textContent = pair.baseToken?.symbol || '???';
-  document.getElementById('m-price').textContent = '$' + (parseFloat(pair.priceUsd) || 0).toFixed(6);
+
+  document.getElementById('tokenModal')
+    ?.classList.add('active');
+
+  document.getElementById('m-logo').src =
+    pair.info?.imageUrl || '';
+
+  document.getElementById('m-name').textContent =
+    pair.baseToken?.name || 'Unknown';
+
+  document.getElementById('m-sym').textContent =
+    pair.baseToken?.symbol || '???';
+
+  document.getElementById('m-price').textContent =
+    '$' + (parseFloat(pair.priceUsd || 0)).toFixed(6);
 
   const change = pair.priceChange?.h24 || 0;
+
   const chgEl = document.getElementById('m-chg');
-  chgEl.textContent = `${change >= 0? '+' : ''}${change.toFixed(2)}%`;
-  chgEl.className = `meme-chg ${change >= 0? 'pos' : 'neg'}`;
 
-  document.getElementById('m-vol').textContent = fmt(pair.volume?.h24 || 0);
-  document.getElementById('m-liq').textContent = fmt(pair.liquidity?.usd || 0);
-  document.getElementById('m-mc').textContent = fmt(pair.fdv || pair.marketCap || 0);
-  document.getElementById('m-addr').textContent = pair.baseToken?.address || '—';
+  chgEl.textContent =
+    `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
 
-  // Links
-  const linksEl = document.getElementById('m-links');
-  const links = [];
-  if(pair.info?.websites?.[0]?.url) links.push(`<a href="${pair.info.websites[0].url}" target="_blank" class="modal-link web">🌐 Website</a>`);
-  if(pair.info?.socials?.find(s => s.type === 'twitter')?.url) links.push(`<a href="${pair.info.socials.find(s => s.type === 'twitter').url}" target="_blank" class="modal-link tw">𝕏 Twitter</a>`);
-  if(pair.info?.socials?.find(s => s.type === 'telegram')?.url) links.push(`<a href="${pair.info.socials.find(s => s.type === 'telegram').url}" target="_blank" class="modal-link tg">✈️ Telegram</a>`);
-  linksEl.innerHTML = links.join('');
+  chgEl.className =
+    `meme-chg ${change >= 0 ? 'pos' : 'neg'}`;
 
-  // Chart
-  loadChart('m5');
+  document.getElementById('m-vol').textContent =
+    fmt(pair.volume?.h24 || 0);
+
+  document.getElementById('m-liq').textContent =
+    fmt(pair.liquidity?.usd || 0);
+
+  document.getElementById('m-mc').textContent =
+    fmt(pair.marketCap || pair.fdv || 0);
+
+  document.getElementById('m-addr').textContent =
+    pair.baseToken?.address || '—';
+
+  loadChart();
 }
 
 function closeModal() {
-  document.getElementById('tokenModal').classList.remove('active');
+
+  document.getElementById('tokenModal')
+    ?.classList.remove('active');
 }
 
-function switchTab(el, tf) {
-  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  state.currentTf = tf;
-  loadChart(tf);
-}
+function loadChart() {
 
-function loadChart(tf) {
-  // Simples: usa DexScreener embed
   const chart = document.getElementById('m-chart');
-  if(!state.currentPair) return;
 
-  const chainId = state.currentPair.chainId;
-  const pairAddress = state.currentPair.pairAddress;
+  if (!chart || !state.currentPair) return;
 
-  chart.innerHTML = `<iframe src="https://dexscreener.com/${chainId}/${pairAddress}?embed=1&theme=light&trades=0&info=0" style="width:100%;height:100%;border:none;"></iframe>`;
-}
-
-function openChartScreen() {
-  if(!state.currentPair) return;
-  const chainId = state.currentPair.chainId;
-  const pairAddress = state.currentPair.pairAddress;
-  document.getElementById('chartScreenFrame').src = `https://dexscreener.com/${chainId}/${pairAddress}?embed=1&theme=light`;
-  document.getElementById('chartScreenTitle').textContent = state.currentPair.baseToken?.symbol || 'Chart';
-  document.getElementById('chartScreen').style.display = 'flex';
-}
-
-function closeChartScreen() {
-  document.getElementById('chartScreen').style.display = 'none';
-  document.getElementById('chartScreenFrame').src = '';
+  chart.innerHTML = `
+    <iframe
+      src="https://dexscreener.com/${state.currentPair.chainId}/${state.currentPair.pairAddress}?embed=1&theme=dark"
+      style="width:100%;height:100%;border:none;">
+    </iframe>
+  `;
 }
 
 /* ═══════════════════════════════════════
-   SEARCH - MANTIDO
+   SEARCH
 ═══════════════════════════════════════ */
 let searchTimeout;
 
 function onSearch(q) {
+
   clearTimeout(searchTimeout);
+
   if (q.length < 2) {
     closeResults();
     return;
   }
 
   searchTimeout = setTimeout(async () => {
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${q}`);
-    const data = await res.json();
-    renderSearch(data.pairs || []);
+
+    try {
+
+      const res = await fetch(
+        `https://api.dexscreener.com/latest/dex/search?q=${q}`
+      );
+
+      const data = await res.json();
+
+      renderSearch(data.pairs || []);
+
+    } catch (err) {
+
+      console.error(err);
+
+    }
+
   }, 400);
 }
 
-function showResults() {
-  const results = document.getElementById('search-results');
-  if(results.children.length > 0) results.classList.add('active');
-}
-
-function closeResults() {
-  document.getElementById('search-results').classList.remove('active');
-}
-
 function renderSearch(pairs) {
-  const container = document.getElementById('search-results');
-  if(!container) return;
 
-  if(!pairs.length) {
-    container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted)">Nenhum resultado</div>';
+  const container =
+    document.getElementById('search-results');
+
+  if (!container) return;
+
+  if (!pairs.length) {
+
+    container.innerHTML = `
+      <div class="empty-state">
+        Nenhum resultado
+      </div>
+    `;
+
     container.classList.add('active');
+
     return;
   }
 
   container.innerHTML = pairs.slice(0, 8).map(p => `
-    <div class="sr-item" onclick='openToken(${JSON.stringify(p).replace(/'/g,"&apos;")});closeResults()'>
-      <img class="sr-logo" src="${p.info?.imageUrl || ''}" onerror="this.style.display='none'">
-      <div>
-        <div class="sr-name">${p.baseToken?.name || 'Unknown'}</div>
-        <div class="sr-pair">${p.baseToken?.symbol}/${p.quoteToken?.symbol}</div>
+    <div class="sr-item"
+      onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")});closeResults()'>
+
+      <div class="sr-name">
+        ${p.baseToken?.name || 'Unknown'}
       </div>
-      <div style="text-align:right">
-        <div class="sr-price">$${(parseFloat(p.priceUsd) || 0).toFixed(6)}</div>
-        <div class="sr-chg ${(p.priceChange?.h24 || 0) >= 0? 'pos' : 'neg'}">${(p.priceChange?.h24 || 0).toFixed(2)}%</div>
+
+      <div class="sr-price">
+        $${parseFloat(p.priceUsd || 0).toFixed(6)}
       </div>
+
     </div>
   `).join('');
+
   container.classList.add('active');
 }
 
+function closeResults() {
+
+  document.getElementById('search-results')
+    ?.classList.remove('active');
+}
+
 /* ═══════════════════════════════════════
-   CHATBOT - MANTIDO
+   CHATBOT
 ═══════════════════════════════════════ */
 function toggleChat() {
+
   const win = document.getElementById('chatWindow');
-  const badge = document.getElementById('chatBadge');
+
+  if (!win) return;
+
   win.classList.toggle('open');
-  if(win.classList.contains('open')) {
-    badge.style.display = 'none';
-    if(document.getElementById('chatMessages').children.length === 0) {
-      addBotMsg('Olá! Sou o CryptoBot 🤖 Pergunte sobre preços, airdrops, alpha ou pré-vendas!');
-      showSuggestions();
-    }
+
+  if (
+    win.classList.contains('open') &&
+    document.getElementById('chatMessages').children.length === 0
+  ) {
+
+    addBotMsg(
+      'Olá! Sou o CryptoBot 🤖'
+    );
+
+    showSuggestions();
   }
 }
 
 function addBotMsg(text) {
+
   const msgs = document.getElementById('chatMessages');
+
+  if (!msgs) return;
+
   const div = document.createElement('div');
+
   div.className = 'chat-msg bot';
+
   div.textContent = text;
+
   msgs.appendChild(div);
+
   msgs.scrollTop = msgs.scrollHeight;
 }
 
 function addUserMsg(text) {
+
   const msgs = document.getElementById('chatMessages');
+
+  if (!msgs) return;
+
   const div = document.createElement('div');
+
   div.className = 'chat-msg user';
+
   div.textContent = text;
+
   msgs.appendChild(div);
+
   msgs.scrollTop = msgs.scrollHeight;
 }
 
 function showSuggestions() {
+
   const sugs = document.getElementById('chatSugs');
-  const sugList = ['Preço BTC', 'Airdrop ativo', 'Alpha call', 'Pré-venda'];
-  sugs.innerHTML = sugList.map(s => `<button class="chat-sug" onclick="sendChat('${s}')">${s}</button>`).join('');
+
+  if (!sugs) return;
+
+  const sugList = [
+    'Preço BTC',
+    'Airdrop ativo',
+    'Alpha call',
+    'Pré-venda'
+  ];
+
+  sugs.innerHTML = sugList.map(s => `
+    <button
+      class="chat-sug"
+      onclick="sendChat('${s}')">
+      ${s}
+    </button>
+  `).join('');
 }
 
 function sendChat(preset) {
+
   const input = document.getElementById('chatInput');
+
   const msg = preset || input.value.trim();
-  if(!msg) return;
+
+  if (!msg) return;
 
   addUserMsg(msg);
+
   input.value = '';
 
-  // Typing
-  const msgs = document.getElementById('chatMessages');
-  const typing = document.createElement('div');
-  typing.className = 'chat-msg typing';
-  typing.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
-  msgs.appendChild(typing);
-  msgs.scrollTop = msgs.scrollHeight;
-
   setTimeout(() => {
-    typing.remove();
+
     addBotMsg(getBotReply(msg));
-  }, 800);
+
+  }, 500);
 }
 
 function getBotReply(msg) {
+
   const kb = (i18n[state.lang] || i18n.pt).kb;
+
   for (const item of kb) {
-    if (item.k.some(k => msg.toLowerCase().includes(k))) {
+
+    if (
+      item.k.some(k =>
+        msg.toLowerCase().includes(k)
+      )
+    ) {
+
       return item.r;
+
     }
   }
+
   return (i18n[state.lang] || i18n.pt).def;
 }
 
@@ -727,24 +812,43 @@ function getBotReply(msg) {
    UTILS
 ═══════════════════════════════════════ */
 const fmt = n =>
-!n? '—' :
-  n >= 1e9? '$' + (n/1e9).toFixed(2)+'B' :
-  n >= 1e6? '$' + (n/1e6).toFixed(2)+'M' :
-  n >= 1e3? '$' + (n/1e3).toFixed(2)+'K' :
-  '$' + n.toFixed(4);
+
+  !n ? '—'
+
+  : n >= 1e9
+    ? '$' + (n / 1e9).toFixed(2) + 'B'
+
+  : n >= 1e6
+    ? '$' + (n / 1e6).toFixed(2) + 'M'
+
+  : n >= 1e3
+    ? '$' + (n / 1e3).toFixed(2) + 'K'
+
+  : '$' + Number(n).toFixed(2);
 
 /* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
+
   updateInterfaceLang();
+
   loadTab('news');
+
   loadMemecoins();
+
   setInterval(loadMemecoins, 30000);
 
-  // Click fora fecha dropdowns
-  document.addEventListener('click', (e) => {
-    if(!e.target.closest('.lang-dropdown')) closeLang();
-    if(!e.target.closest('.search-wrap')) closeResults();
+  document.addEventListener('click', e => {
+
+    if (!e.target.closest('.lang-dropdown')) {
+      closeLang();
+    }
+
+    if (!e.target.closest('.search-wrap')) {
+      closeResults();
+    }
+
   });
+
 });
