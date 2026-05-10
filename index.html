@@ -11,8 +11,8 @@
 
 <link rel="stylesheet" href="style.css"/>
 
-<!-- CHART -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- LIGHTWEIGHT CHARTS - CORRETO -->
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
 <!-- JUPITER TERMINAL -->
 <script src='https://terminal.jup.ag/main.js'></script>
@@ -131,8 +131,6 @@
     <div class="logo">
       coinhatfeeds
     </div>
-
-  </div>
 
   <!-- SEARCH -->
   <div class="search-wrap">
@@ -290,7 +288,7 @@
       </span>
     </button>
 
-  </div> <!-- FECHEI ESSA DIV AQUI -->
+  </div>
 
   <!-- MEME GRID -->
   <div class="meme-grid" id="memeGrid">
@@ -368,7 +366,7 @@
           —
         </div>
 
-      </div> <!-- FECHEI ESSA DIV AQUI -->
+      </div>
 
       <!-- STATS -->
       <div class="modal-row">
@@ -422,7 +420,7 @@
       <!-- CUSTOM CHART -->
       <div class="custom-chart-wrap">
 
-        <canvas id="m-chart"></canvas>
+        <div id="m-chart" style="width:100%;height:320px;"></div>
 
         <div
           class="chart-loading"
@@ -499,8 +497,6 @@
         id="botSub">
         Assistente CoinHatFeeds · online
       </div>
-
-    </div>
 
     <button
       class="chat-head-close"
