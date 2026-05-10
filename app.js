@@ -4,7 +4,7 @@
 const API = 'https://coinhatfeeds.onrender.com/api';
 
 // COLOCA TEU ENDEREÇO DA PHANTOM AQUI PRA RECEBER A TAXA
-const FEE_WALLET = '7xK3...ColocaTuaCarteiraAqui';
+const FEE_WALLET = '9GXNpv77WRacQfPaEdBog91uYFnJwdzJfiwuDWiAxgCs';
 
 let state = {
   lang: 'pt',
