@@ -1,7 +1,6 @@
 // public/js/app.js
 document.addEventListener('DOMContentLoaded', () => {
 
-  // === TRADUÇÕES ===
   const translations = {
     pt: {
       chart: "Gráfico", site: "Site", buy: "Comprar", sell: "Vender",
@@ -15,18 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // === STATE ===
   let currentLang = 'pt';
-  let currentView = 'tokens';
   let memesData = [];
-  let solPrice = 0;
   let jupiterModal, coinhatBotModal, buyModal;
 
-  // === SELETORES ===
   const getEl = (id) => document.getElementById(id);
   const mainTitle = getEl('mainTitle');
-  const gridView = getEl('gridView');
-  const listView = getEl('listView');
   const tokenCardsContainer = getEl('tokenCardsContainer');
   const hamburgerMenu = getEl('hamburgerMenu');
   const drawerMenu = getEl('drawerMenu');
@@ -34,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const drawerClose = getEl('drawerClose');
   const searchInput = getEl('searchInput');
 
-  // === FUNÇÕES BASE ===
   const formatPrice = (p) =>!p? 'N/A' : (p < 0.0001? p.toExponential(2) : p.toLocaleString('en-US', {maximumFractionDigits: 8}));
   const formatMarketCap = (m) => {
     if (!m) return 'N/A';
@@ -44,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return m.toFixed(2);
   };
   const formatPercent = (p) => p? `${p.toFixed(2)}%` : 'N/A';
-  const formatNumber = (n) => n? n.toLocaleString('en-US') : 'N/A';
 
   function updateTexts() {
     const t = translations[currentLang];
@@ -55,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === RENDERIZAÇÃO ===
   function renderTokens() {
     if (!tokenCardsContainer) return;
     tokenCardsContainer.innerHTML = '';
@@ -96,20 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === FETCH DIRETO NO DEXSCREENER - SEM BACKEND ===
   async function fetchMemes() {
     try {
       console.log('Buscando direto no DexScreener...');
       const url = 'https://api.dexscreener.com/latest/dex/search?q=solana';
       const response = await fetch(url);
-
       if (!response.ok) throw new Error(`DexScreener ${response.status}`);
 
       const json = await response.json();
       const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
       memesData = json.pairs
-       .filter(p => {
+      .filter(p => {
           const fdv = p.fdv || p.marketCap || 0;
           const liquidity = p.liquidity?.usd || 0;
           const created = p.pairCreatedAt || 0;
@@ -123,11 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
                  symbol!== 'SOL' &&
                  symbol!== 'USDC' &&
                  symbol!== 'USDT' &&
-                !name.includes('WRAPPED') &&
+               !name.includes('WRAPPED') &&
                  p.priceUsd;
         })
-       .sort((a, b) => (b.fdv || 0) - (a.fdv || 0))
-       .slice(0, 18);
+      .sort((a, b) => (b.fdv || 0) - (a.fdv || 0))
+      .slice(0, 18);
 
       console.log(`${memesData.length} tokens carregados`);
       renderTokens();
@@ -135,20 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error("Erro ao buscar memes:", error);
       if (tokenCardsContainer) {
-        tokenCardsContainer.innerHTML = `<p style="text-align:center;color:#ff5555;padding:20px;">Erro ao carregar tokens. Recarregue a página.</p>`;
+        tokenCardsContainer.innerHTML = `<p style="text-align:center;color:#ff5555;padding:20px;">Erro ao carregar tokens: ${error.message}</p>`;
       }
     }
   }
 
-  async function fetchSolPrice() {
-    try {
-      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
-      const data = await res.json();
-      solPrice = data.solana?.usd || 0;
-    } catch (e) { console.error('Erro preço SOL:', e); }
-  }
-
-  // === MODAIS ===
   function initModals() {
     jupiterModal = new bootstrap.Modal(getEl('jupiterModal'));
     coinhatBotModal = new bootstrap.Modal(getEl('coinhatBotModal'));
@@ -187,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const linksDiv = getEl('aboutTokenLinks');
     linksDiv.innerHTML = '';
-
     if (token.info?.websites?.length > 0) {
       token.info.websites.forEach(site => {
         linksDiv.innerHTML += `<a href="${site.url}" target="_blank" class="link-button"><i class="fas fa-globe"></i> ${site.label || 'Website'}</a>`;
@@ -198,46 +176,37 @@ document.addEventListener('DOMContentLoaded', () => {
         linksDiv.innerHTML += `<a href="${social.url}" target="_blank" class="link-button"><i class="fab fa-${social.type}"></i> ${social.type}</a>`;
       });
     }
-
     if (linksDiv.innerHTML === '') {
       linksDiv.innerHTML = `<p style="color:#888;">${t.info_na}</p>`;
     }
-
     new bootstrap.Modal(getEl('aboutModal')).show();
   }
 
-  // === EVENTOS ===
   function setupEventListeners() {
-    // Hamburger
     hamburgerMenu?.addEventListener('click', () => {
       drawerMenu.classList.add('open');
       drawerOverlay.classList.add('open');
     });
-
     drawerClose?.addEventListener('click', () => {
       drawerMenu.classList.remove('open');
       drawerOverlay.classList.remove('open');
     });
-
     drawerOverlay?.addEventListener('click', () => {
       drawerMenu.classList.remove('open');
       drawerOverlay.classList.remove('open');
     });
 
-    // Idioma
     getEl('langPT')?.addEventListener('click', () => {
       currentLang = 'pt';
       updateTexts();
       renderTokens();
     });
-
     getEl('langEN')?.addEventListener('click', () => {
       currentLang = 'en';
       updateTexts();
       renderTokens();
     });
 
-    // Busca
     searchInput?.addEventListener('input', (e) => {
       const term = e.target.value.toLowerCase();
       const filtered = memesData.filter(t =>
@@ -250,11 +219,9 @@ document.addEventListener('DOMContentLoaded', () => {
       memesData = temp;
     });
 
-    // Cards
     tokenCardsContainer?.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
-
       const action = btn.dataset.action;
 
       if (action === 'chart') {
@@ -270,34 +237,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Bot flutuante
     getEl('coinhatBotButton')?.addEventListener('click', openCoinhatBot);
-
-    // Drawer links
-    document.querySelectorAll('.drawer-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const view = link.dataset.view;
-        if (view === 'tokens') {
-          currentView = 'tokens';
-          mainTitle.textContent = translations[currentLang].new_tokens;
-          fetchMemes();
-        }
-        drawerMenu.classList.remove('open');
-        drawerOverlay.classList.remove('open');
-      });
-    });
   }
 
-  // === INIT ===
   async function init() {
     initModals();
     setupEventListeners();
     updateTexts();
-    await fetchSolPrice();
     await fetchMemes();
-
-    // Atualiza a cada 60s
     setInterval(fetchMemes, 60000);
   }
 
