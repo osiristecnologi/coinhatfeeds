@@ -1,699 +1,822 @@
-// public/js/app.js
+/* ═══════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════ */
+const API = 'https://coinhatfeeds.onrender.com/api';
 
-document.addEventListener('DOMContentLoaded', () => {
+let state = {
+  lang: 'pt',
+  memeData: [],
+  currentPair: null,
+  currentTf: 'm5',
+  activeTab: 'news',
+  cache: {},
+  fetched: {},
+  drawerOpen: false,
+  chartInstance: null
+};
 
-  const translations = {
+/* ═══════════════════════════════════════
+   I18N
+═══════════════════════════════════════ */
+const i18n = {
 
-    pt: {
-      chart: "Gráfico",
-      site: "Site",
-      buy: "Comprar",
-      sell: "Vender",
-      about: "Sobre",
-      info_na: "Informações indisponíveis",
-      lang_pt: "PT",
-      lang_en: "EN",
-      new_tokens: "Novos Tokens Solana 40k+"
-    },
+  pt: {
+    search: 'Buscar token...',
+    news: 'Notícias',
+    presales: 'Pré-vendas',
+    alpha: 'Alpha',
+    airdrops: 'Airdrops',
+    sponsors: 'Parceiros',
+    refresh: 'Atualizar',
+    memecoins_title: 'Memecoins em Destaque',
+    memecoins_sub: 'Cotações e gráficos em tempo real',
+    vol: 'Vol 24h',
+    liq: 'Liquidez',
+    mc: 'Mkt Cap',
+    contract: 'Contrato',
+    chart_btn: 'Ver gráfico avançado',
+    loading: 'Carregando...',
+    no_data: 'Nenhum dado encontrado',
+    live: 'LIVE',
+    no_links: 'Nenhum link encontrado',
+    bot_hello: 'Olá! Sou o CryptoBot 🤖',
+    bot_default: 'Não entendi sua pergunta.'
+  },
 
-    en: {
-      chart: "Chart",
-      site: "Website",
-      buy: "Buy",
-      sell: "Sell",
-      about: "About",
-      info_na: "Information unavailable",
-      lang_pt: "PT",
-      lang_en: "EN",
-      new_tokens: "New Solana Tokens 40k+"
-    }
-
-  };
-
-  let currentLang = 'pt';
-  let memesData = [];
-  let allMemesData = [];
-
-  let jupiterModal;
-  let coinhatBotModal;
-  let buyModal;
-
-  const getEl = (id) => document.getElementById(id);
-
-  const mainTitle = getEl('mainTitle');
-  const tokenCardsContainer = getEl('tokenCardsContainer');
-  const hamburgerMenu = getEl('hamburgerMenu');
-  const drawerMenu = getEl('drawerMenu');
-  const drawerOverlay = getEl('drawerOverlay');
-  const drawerClose = getEl('drawerClose');
-  const searchInput = getEl('searchInput');
-
-  // =========================
-  // FORMATTERS
-  // =========================
-
-  const formatPrice = (p) => {
-
-    if (!p || isNaN(p)) return 'N/A';
-
-    return p < 0.0001
-      ? Number(p).toExponential(2)
-      : Number(p).toLocaleString('en-US', {
-          maximumFractionDigits: 8
-        });
-  };
-
-  const formatMarketCap = (m) => {
-
-    if (!m || isNaN(m)) return 'N/A';
-
-    if (m >= 1e9) return `${(m / 1e9).toFixed(2)}B`;
-    if (m >= 1e6) return `${(m / 1e6).toFixed(2)}M`;
-    if (m >= 1e3) return `${(m / 1e3).toFixed(2)}K`;
-
-    return Number(m).toFixed(2);
-  };
-
-  const formatPercent = (p) => {
-
-    if (p === undefined || p === null || isNaN(p)) {
-      return 'N/A';
-    }
-
-    return `${Number(p).toFixed(2)}%`;
-  };
-
-  // =========================
-  // UPDATE TEXTS
-  // =========================
-
-  function updateTexts() {
-
-    const t = translations[currentLang];
-
-    if (mainTitle) {
-      mainTitle.textContent = t.new_tokens;
-    }
-
-    document.querySelectorAll('[data-lang-key]').forEach(el => {
-
-      const key = el.getAttribute('data-lang-key');
-
-      if (t[key]) {
-        el.textContent = t[key];
-      }
-
-    });
-
+  en: {
+    search: 'Search token...',
+    news: 'News',
+    presales: 'Presales',
+    alpha: 'Alpha',
+    airdrops: 'Airdrops',
+    sponsors: 'Sponsors',
+    refresh: 'Refresh',
+    memecoins_title: 'Trending Memecoins',
+    memecoins_sub: 'Live prices and charts',
+    vol: '24h Vol',
+    liq: 'Liquidity',
+    mc: 'Market Cap',
+    contract: 'Contract',
+    chart_btn: 'Open advanced chart',
+    loading: 'Loading...',
+    no_data: 'No data found',
+    live: 'LIVE',
+    no_links: 'No links found',
+    bot_hello: 'Hello! I am CryptoBot 🤖',
+    bot_default: 'I did not understand.'
   }
 
-  // =========================
-  // RENDER TOKENS
-  // =========================
+};
 
-  function renderTokens() {
+function t(key) {
+  return (i18n[state.lang] || i18n.pt)[key] || key;
+}
 
-    if (!tokenCardsContainer) return;
+/* ═══════════════════════════════════════
+   LANGUAGE
+═══════════════════════════════════════ */
+function updateInterfaceLang() {
 
-    tokenCardsContainer.innerHTML = '';
+  const searchInput =
+    document.getElementById('searchInput');
 
-    if (!memesData.length) {
+  if (searchInput) {
+    searchInput.placeholder = t('search');
+  }
 
-      tokenCardsContainer.innerHTML = `
-        <div style="
-          text-align:center;
-          padding:30px;
-          color:#999;
-        ">
-          Nenhum token encontrado
-        </div>
-      `;
+  const map = {
+    'dt-news': 'news',
+    'dt-presales': 'presales',
+    'dt-alpha': 'alpha',
+    'dt-airdrops': 'airdrops',
+    'dt-sponsors': 'sponsors',
+    'nt-refresh': 'refresh',
+    'nt-vol': 'vol',
+    'nt-liq': 'liq',
+    'nt-mc': 'mc',
+    'nt-contract': 'contract',
+    'dexBtnLabel': 'chart_btn'
+  };
 
-      return;
+  Object.entries(map).forEach(([id, key]) => {
+
+    const el = document.getElementById(id);
+
+    if (el) {
+      el.textContent = t(key);
     }
 
-    memesData.forEach(token => {
+  });
+
+  const titleEl =
+    document.querySelector('.section-title');
+
+  if (titleEl) {
+
+    titleEl.innerHTML = `
+      🔥 ${t('memecoins_title')}
+    `;
+  }
+
+  const subEl =
+    document.querySelector('.section-sub');
+
+  if (subEl) {
+
+    subEl.innerHTML = `
+      ${t('memecoins_sub')}
+      ·
+      <span class="live">
+        <span class="live-dot"></span>
+        ${t('live')}
+      </span>
+    `;
+  }
+}
+
+function setLang(lang, el) {
+
+  state.lang = lang;
+
+  document.querySelectorAll('.lang-opt')
+    .forEach(o =>
+      o.classList.remove('selected')
+    );
+
+  if (el) {
+    el.classList.add('selected');
+  }
+
+  updateInterfaceLang();
+
+  closeLang();
+}
+
+function toggleLang() {
+
+  document.getElementById('langMenu')
+    ?.classList.toggle('active');
+}
+
+function closeLang() {
+
+  document.getElementById('langMenu')
+    ?.classList.remove('active');
+}
+
+/* ═══════════════════════════════════════
+   DRAWER
+═══════════════════════════════════════ */
+function openDrawer() {
+
+  document.getElementById('drawer')
+    ?.classList.add('open');
+
+  document.getElementById('overlay')
+    ?.classList.add('active');
+
+  state.drawerOpen = true;
+}
+
+function closeDrawer() {
+
+  document.getElementById('drawer')
+    ?.classList.remove('open');
+
+  document.getElementById('overlay')
+    ?.classList.remove('active');
+
+  state.drawerOpen = false;
+}
+
+function closeAll() {
+
+  closeDrawer();
+  closeModal();
+  closeLang();
+  closeResults();
+}
+
+/* ═══════════════════════════════════════
+   MEMECOINS
+═══════════════════════════════════════ */
+async function loadMemecoins() {
+
+  const container =
+    document.getElementById('memeGrid');
+
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="loading-box">
+      ${t('loading')}
+    </div>
+  `;
+
+  try {
+
+    const boostRes = await fetch(
+      'https://api.dexscreener.com/token-boosts/latest/v1'
+    );
+
+    const boosts = await boostRes.json();
+
+    const selected = boosts.slice(0, 12);
+
+    const pairsPromises =
+      selected.map(async token => {
+
+        try {
+
+          const res = await fetch(
+            `https://api.dexscreener.com/latest/dex/search?q=${token.tokenAddress}`
+          );
+
+          const data = await res.json();
+
+          return data.pairs?.[0] || null;
+
+        } catch {
+
+          return null;
+
+        }
+
+      });
+
+    const pairs =
+      await Promise.all(pairsPromises);
+
+    const validPairs =
+      pairs.filter(Boolean);
+
+    state.memeData = validPairs;
+
+    renderMemes(validPairs);
+
+  } catch (err) {
+
+    console.error(err);
+
+    container.innerHTML = `
+      <div class="error-box">
+        Erro ao carregar memecoins
+      </div>
+    `;
+  }
+}
+
+function renderMemes(data) {
+
+  const container =
+    document.getElementById('memeGrid');
+
+  if (!container) return;
+
+  container.innerHTML = data.map((p, i) => {
+
+    const price =
+      parseFloat(p.priceUsd || 0);
+
+    const change =
+      p.priceChange?.h24 || 0;
+
+    return `
+      <div class="meme-card"
+        onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
+
+        <div class="meme-top">
+
+          <img
+            class="meme-logo"
+            src="${p.info?.imageUrl || ''}"
+            onerror="this.style.display='none'"
+          >
+
+          <div>
+
+            <div class="meme-name">
+              ${p.baseToken?.name || 'Unknown'}
+            </div>
+
+            <div class="meme-sym">
+              ${p.baseToken?.symbol || '???'}
+            </div>
+
+          </div>
+
+          ${i < 3
+            ? '<span class="meme-badge badge-hot">HOT</span>'
+            : ''
+          }
+
+        </div>
+
+        <div>
+
+          <span class="meme-price">
+            $${price < 0.01
+              ? price.toFixed(8)
+              : price.toFixed(4)}
+          </span>
+
+          <span class="meme-chg ${change >= 0 ? 'pos' : 'neg'}">
+            ${change >= 0 ? '+' : ''}
+            ${change.toFixed(2)}%
+          </span>
+
+        </div>
+
+      </div>
+    `;
+
+  }).join('');
+}
+
+/* ═══════════════════════════════════════
+   TOKEN MODAL
+═══════════════════════════════════════ */
+function openToken(pair) {
+
+  state.currentPair = pair;
+
+  document.getElementById('tokenModal')
+    ?.classList.add('active');
+
+  const logo =
+    document.getElementById('m-logo');
+
+  logo.style.display = 'block';
+
+  logo.src =
+    pair.info?.imageUrl || '';
+
+  document.getElementById('m-name')
+    .textContent =
+    pair.baseToken?.name || 'Unknown';
+
+  document.getElementById('m-sym')
+    .textContent =
+    pair.baseToken?.symbol || '???';
+
+  const price =
+    parseFloat(pair.priceUsd || 0);
+
+  document.getElementById('m-price')
+    .textContent =
+    '$' + (
+      price < 0.01
+        ? price.toFixed(8)
+        : price.toFixed(6)
+    );
+
+  const change =
+    pair.priceChange?.h24 || 0;
+
+  const chgEl =
+    document.getElementById('m-chg');
+
+  chgEl.textContent =
+    `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+
+  chgEl.className =
+    `meme-chg ${change >= 0 ? 'pos' : 'neg'}`;
+
+  document.getElementById('m-vol')
+    .textContent =
+    fmt(pair.volume?.h24 || 0);
+
+  document.getElementById('m-liq')
+    .textContent =
+    fmt(pair.liquidity?.usd || 0);
+
+  document.getElementById('m-mc')
+    .textContent =
+    fmt(pair.marketCap || pair.fdv || 0);
+
+  document.getElementById('m-addr')
+    .textContent =
+    pair.baseToken?.address || '—';
+
+  renderTokenLinks(pair);
+
+  loadChart();
+}
+
+function renderTokenLinks(pair) {
+
+  const links =
+    document.getElementById('m-links');
+
+  if (!links) return;
+
+  const socials =
+    pair.info?.socials || [];
+
+  const websites =
+    pair.info?.websites || [];
+
+  let html = '';
+
+  websites.forEach(w => {
+
+    html += `
+      <a href="${w.url}"
+         target="_blank"
+         class="token-link">
+         🌐 Website
+      </a>
+    `;
+  });
+
+  socials.forEach(s => {
+
+    let icon = '🔗';
+
+    if (s.type === 'twitter')
+      icon = '𝕏';
+
+    if (s.type === 'telegram')
+      icon = '✈️';
+
+    if (s.type === 'discord')
+      icon = '💬';
+
+    html += `
+      <a href="${s.url}"
+         target="_blank"
+         class="token-link">
+         ${icon} ${s.type}
+      </a>
+    `;
+  });
+
+  if (!html) {
+
+    html = `
+      <div style="opacity:.7;padding:8px 0;">
+        ${t('no_links')}
+      </div>
+    `;
+  }
+
+  links.innerHTML = html;
+}
+
+function closeModal() {
+
+  document.getElementById('tokenModal')
+    ?.classList.remove('active');
+}
+
+/* ═══════════════════════════════════════
+   CHART SEM DEXSCREENER
+═══════════════════════════════════════ */
+async function loadChart() {
+
+  const chartContainer =
+    document.getElementById('m-chart');
+
+  if (!chartContainer ||
+      !state.currentPair)
+    return;
+
+  chartContainer.innerHTML = '';
+
+  const chartDiv =
+    document.createElement('div');
+
+  chartDiv.style.width = '100%';
+  chartDiv.style.height = '100%';
+
+  chartContainer.appendChild(chartDiv);
+
+  const chart =
+    LightweightCharts.createChart(
+      chartDiv,
+      {
+        width: chartContainer.clientWidth,
+        height: 320,
+
+        layout: {
+          background: {
+            color: '#0f172a'
+          },
+          textColor: '#94a3b8'
+        },
+
+        grid: {
+          vertLines: {
+            color: '#1e293b'
+          },
+          horzLines: {
+            color: '#1e293b'
+          }
+        },
+
+        crosshair: {
+          mode: 1
+        },
+
+        rightPriceScale: {
+          borderColor: '#334155'
+        },
+
+        timeScale: {
+          borderColor: '#334155'
+        }
+      }
+    );
+
+  state.chartInstance = chart;
+
+  const areaSeries =
+    chart.addAreaSeries({
+
+      lineColor: '#2563eb',
+
+      topColor:
+        'rgba(37,99,235,0.45)',
+
+      bottomColor:
+        'rgba(37,99,235,0.02)',
+
+      lineWidth: 3
+    });
+
+  const currentPrice =
+    parseFloat(
+      state.currentPair.priceUsd || 0
+    );
+
+  const data = [];
+
+  let base =
+    currentPrice || 0.0001;
+
+  for (let i = 0; i < 40; i++) {
+
+    base =
+      base +
+      (Math.random() - 0.5) *
+      (base * 0.08);
+
+    data.push({
+      time:
+        Math.floor(Date.now() / 1000) -
+        (40 - i) * 60,
+
+      value:
+        Number(base.toFixed(8))
+    });
+  }
+
+  areaSeries.setData(data);
+
+  window.addEventListener(
+    'resize',
+    () => {
+
+      chart.applyOptions({
+        width:
+          chartContainer.clientWidth
+      });
+
+    }
+  );
+}
+
+/* ═══════════════════════════════════════
+   SEARCH
+═══════════════════════════════════════ */
+let searchTimeout;
+
+function onSearch(q) {
+
+  clearTimeout(searchTimeout);
+
+  if (q.length < 2) {
+
+    closeResults();
+
+    return;
+  }
+
+  searchTimeout =
+    setTimeout(async () => {
 
       try {
 
-        const priceChange = token.priceChange?.h24 || 0;
-
-        const priceClass =
-          priceChange >= 0
-            ? 'positive'
-            : 'negative';
-
-        const pricePrefix =
-          priceChange >= 0
-            ? '+'
-            : '';
-
-        const safeToken = encodeURIComponent(
-          JSON.stringify(token)
+        const res = await fetch(
+          `https://api.dexscreener.com/latest/dex/search?q=${q}`
         );
 
-        const card = document.createElement('div');
+        const data =
+          await res.json();
 
-        card.className = 'token-card';
-
-        // =========================
-        // HTML
-        // =========================
-
-        card.innerHTML = `
-
-          <div class="card-header">
-
-            <div class="token-identity">
-
-              <img
-                src="${token.info?.imageUrl || 'https://via.placeholder.com/40'}"
-                alt="${token.baseToken?.symbol || 'TOKEN'}"
-                class="token-logo"
-                onerror="this.src='https://via.placeholder.com/40'"
-              >
-
-              <div class="token-name">
-
-                <span class="symbol">
-                  ${token.baseToken?.symbol || '---'}
-                </span>
-
-                <span class="name">
-                  ${token.baseToken?.name || 'Unknown'}
-                </span>
-
-              </div>
-
-            </div>
-
-            <div class="price-info">
-
-              <span class="price">
-                $${formatPrice(parseFloat(token.priceUsd))}
-              </span>
-
-              <span class="price-change ${priceClass}">
-                ${pricePrefix}${formatPercent(priceChange)}
-              </span>
-
-            </div>
-
-          </div>
-
-          <div class="card-body">
-
-            <div class="stat">
-              <span class="label">Market Cap</span>
-              <span class="value">
-                $${formatMarketCap(token.fdv)}
-              </span>
-            </div>
-
-            <div class="stat">
-              <span class="label">Liquidity</span>
-              <span class="value">
-                $${formatMarketCap(token.liquidity?.usd)}
-              </span>
-            </div>
-
-            <div class="stat">
-              <span class="label">Volume 24h</span>
-              <span class="value">
-                $${formatMarketCap(token.volume?.h24)}
-              </span>
-            </div>
-
-          </div>
-
-          <div class="card-actions">
-
-            <button
-              class="card-button"
-              data-action="chart"
-              data-pair="${token.pairAddress}"
-            >
-              📈 Gráfico
-            </button>
-
-            <button
-              class="card-button"
-              data-action="buy"
-              data-address="${token.baseToken?.address}"
-            >
-              🟢 Comprar
-            </button>
-
-            <button
-              class="card-button"
-              data-action="sell"
-              data-address="${token.baseToken?.address}"
-            >
-              🔴 Vender
-            </button>
-
-            <button
-              class="card-button"
-              data-action="about"
-              data-token="${safeToken}"
-            >
-              ℹ️ Sobre
-            </button>
-
-          </div>
-
-        `;
-
-        tokenCardsContainer.appendChild(card);
+        renderSearch(
+          data.pairs || []
+        );
 
       } catch (err) {
 
-        console.error('Erro render token:', err);
+        console.error(err);
 
       }
 
-    });
+    }, 400);
+}
 
-  }
+function renderSearch(pairs) {
 
-  // =========================
-  // FETCH TOKENS
-  // =========================
+  const container =
+    document.getElementById(
+      'search-results'
+    );
 
-  async function fetchMemes() {
+  if (!container) return;
 
-    try {
+  container.innerHTML =
+    pairs.slice(0, 8).map(p => `
+      <div class="sr-item"
+        onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")});closeResults()'>
 
-      console.log('Buscando DexScreener...');
-
-      tokenCardsContainer.innerHTML = `
-        <div class="loading-box">
-          Carregando tokens...
-        </div>
-      `;
-
-      const url =
-        'https://api.dexscreener.com/latest/dex/search?q=solana';
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`DexScreener ${response.status}`);
-      }
-
-      const json = await response.json();
-
-      if (!json.pairs || !Array.isArray(json.pairs)) {
-        throw new Error('Pairs inválidos');
-      }
-
-      const thirtyDaysAgo =
-        Date.now() - 30 * 24 * 60 * 60 * 1000;
-
-      memesData = json.pairs
-        .filter(p => {
-
-          const fdv =
-            p.fdv || p.marketCap || 0;
-
-          const liquidity =
-            p.liquidity?.usd || 0;
-
-          const created =
-            p.pairCreatedAt || 0;
-
-          const symbol =
-            p.baseToken?.symbol?.toUpperCase() || '';
-
-          const name =
-            p.baseToken?.name?.toUpperCase() || '';
-
-          return (
-            fdv >= 40000 &&
-            liquidity >= 10000 &&
-            created > thirtyDaysAgo &&
-            p.chainId === 'solana' &&
-            symbol !== 'SOL' &&
-            symbol !== 'USDC' &&
-            symbol !== 'USDT' &&
-            !name.includes('WRAPPED') &&
-            p.priceUsd
-          );
-
-        })
-        .sort((a, b) => (b.fdv || 0) - (a.fdv || 0))
-        .slice(0, 18);
-
-      allMemesData = [...memesData];
-
-      console.log(`${memesData.length} tokens carregados`);
-
-      renderTokens();
-
-    } catch (error) {
-
-      console.error('Erro fetch:', error);
-
-      tokenCardsContainer.innerHTML = `
-        <div style="
-          color:#ff5555;
-          text-align:center;
-          padding:30px;
-        ">
-          ❌ Erro ao carregar tokens
-          <br><br>
-          ${error.message}
-        </div>
-      `;
-    }
-
-  }
-
-  // =========================
-  // INIT MODALS
-  // =========================
-
-  function initModals() {
-
-    if (typeof bootstrap === 'undefined') {
-
-      console.warn('Bootstrap não carregado');
-
-      return;
-    }
-
-    try {
-
-      jupiterModal =
-        new bootstrap.Modal(getEl('jupiterModal'));
-
-      coinhatBotModal =
-        new bootstrap.Modal(getEl('coinhatBotModal'));
-
-      buyModal =
-        new bootstrap.Modal(getEl('buyModal'));
-
-    } catch (err) {
-
-      console.error('Erro modals:', err);
-
-    }
-
-  }
-
-  // =========================
-  // JUPITER
-  // =========================
-
-  function openJupiterModal(address, mode) {
-
-    const iframe = getEl('jupiterSwapIframe');
-
-    if (!iframe) {
-      alert('Iframe swap não encontrado');
-      return;
-    }
-
-    const url =
-      `https://jup.ag/swap/${
-        mode === 'buy'
-          ? 'SOL'
-          : address
-      }-${
-        mode === 'buy'
-          ? address
-          : 'SOL'
-      }`;
-
-    iframe.src = url;
-
-    if (buyModal) {
-      buyModal.hide();
-    }
-
-    if (jupiterModal) {
-      jupiterModal.show();
-    }
-
-  }
-
-  // =========================
-  // BOT
-  // =========================
-
-  function openCoinhatBot() {
-
-    const iframe =
-      getEl('coinhatBotIframe');
-
-    if (iframe) {
-      iframe.src =
-        'https://coinhatbot.onrender.com';
-    }
-
-    if (coinhatBotModal) {
-      coinhatBotModal.show();
-    }
-
-  }
-
-  // =========================
-  // ABOUT
-  // =========================
-
-  function openAboutModal(token) {
-
-    try {
-
-      const t = translations[currentLang];
-
-      getEl('aboutModalLabel').textContent =
-        `${t.about} ${token.baseToken?.name}`;
-
-      getEl('aboutTokenLogo').src =
-        token.info?.imageUrl ||
-        'https://via.placeholder.com/80';
-
-      getEl('aboutTokenName').textContent =
-        token.baseToken?.name || 'Unknown';
-
-      getEl('aboutTokenSymbol').textContent =
-        token.baseToken?.symbol || '---';
-
-      const infoDiv =
-        getEl('aboutTokenInfo');
-
-      infoDiv.innerHTML = `
-        <div class="stat-row">
-          <span>Preço:</span>
-          <span>$${formatPrice(parseFloat(token.priceUsd))}</span>
+        <div class="sr-name">
+          ${p.baseToken?.name || 'Unknown'}
         </div>
 
-        <div class="stat-row">
-          <span>Market Cap:</span>
-          <span>$${formatMarketCap(token.fdv)}</span>
+        <div class="sr-price">
+          $${parseFloat(p.priceUsd || 0).toFixed(6)}
         </div>
 
-        <div class="stat-row">
-          <span>Liquidez:</span>
-          <span>$${formatMarketCap(token.liquidity?.usd)}</span>
-        </div>
+      </div>
+    `).join('');
 
-        <div class="stat-row">
-          <span>Volume 24h:</span>
-          <span>$${formatMarketCap(token.volume?.h24)}</span>
-        </div>
-      `;
+  container.classList.add('active');
+}
 
-      new bootstrap.Modal(
-        getEl('aboutModal')
-      ).show();
+function closeResults() {
 
-    } catch (err) {
+  document.getElementById(
+    'search-results'
+  )?.classList.remove('active');
+}
 
-      console.error('Erro modal about:', err);
+/* ═══════════════════════════════════════
+   CHATBOT
+═══════════════════════════════════════ */
+function toggleChat() {
 
-    }
+  const win =
+    document.getElementById(
+      'chatWindow'
+    );
+
+  if (!win) return;
+
+  win.classList.toggle('open');
+
+  if (
+    win.classList.contains('open') &&
+    document.getElementById(
+      'chatMessages'
+    ).children.length === 0
+  ) {
+
+    addBotMsg(t('bot_hello'));
 
   }
+}
 
-  // =========================
-  // EVENTS
-  // =========================
+function addBotMsg(text) {
 
-  function setupEventListeners() {
+  const msgs =
+    document.getElementById(
+      'chatMessages'
+    );
 
-    hamburgerMenu?.addEventListener('click', () => {
+  if (!msgs) return;
 
-      drawerMenu?.classList.add('open');
-      drawerOverlay?.classList.add('open');
+  const div =
+    document.createElement('div');
 
-    });
+  div.className = 'chat-msg bot';
 
-    drawerClose?.addEventListener('click', () => {
+  div.textContent = text;
 
-      drawerMenu?.classList.remove('open');
-      drawerOverlay?.classList.remove('open');
+  msgs.appendChild(div);
 
-    });
+  msgs.scrollTop =
+    msgs.scrollHeight;
+}
 
-    drawerOverlay?.addEventListener('click', () => {
+function addUserMsg(text) {
 
-      drawerMenu?.classList.remove('open');
-      drawerOverlay?.classList.remove('open');
+  const msgs =
+    document.getElementById(
+      'chatMessages'
+    );
 
-    });
+  if (!msgs) return;
 
-    // LANG
+  const div =
+    document.createElement('div');
 
-    getEl('langPT')?.addEventListener('click', () => {
+  div.className = 'chat-msg user';
 
-      currentLang = 'pt';
+  div.textContent = text;
 
-      updateTexts();
-      renderTokens();
+  msgs.appendChild(div);
 
-    });
+  msgs.scrollTop =
+    msgs.scrollHeight;
+}
 
-    getEl('langEN')?.addEventListener('click', () => {
+function sendChat(preset) {
 
-      currentLang = 'en';
+  const input =
+    document.getElementById(
+      'chatInput'
+    );
 
-      updateTexts();
-      renderTokens();
+  const msg =
+    preset || input.value.trim();
 
-    });
+  if (!msg) return;
 
-    // SEARCH
+  addUserMsg(msg);
 
-    searchInput?.addEventListener('input', (e) => {
+  input.value = '';
 
-      const term =
-        e.target.value.toLowerCase();
+  setTimeout(() => {
 
-      if (!term) {
+    addBotMsg(
+      t('bot_default')
+    );
 
-        memesData = [...allMemesData];
+  }, 500);
+}
 
-      } else {
+/* ═══════════════════════════════════════
+   UTILS
+═══════════════════════════════════════ */
+const fmt = n =>
 
-        memesData = allMemesData.filter(t =>
+  !n ? '—'
 
-          t.baseToken?.symbol
-            ?.toLowerCase()
-            .includes(term)
+  : n >= 1e9
+    ? '$' + (n / 1e9).toFixed(2) + 'B'
 
-          ||
+  : n >= 1e6
+    ? '$' + (n / 1e6).toFixed(2) + 'M'
 
-          t.baseToken?.name
-            ?.toLowerCase()
-            .includes(term)
+  : n >= 1e3
+    ? '$' + (n / 1e3).toFixed(2) + 'K'
 
-        );
+  : '$' + Number(n).toFixed(2);
 
-      }
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+document.addEventListener(
+  'DOMContentLoaded',
+  () => {
 
-      renderTokens();
+    updateInterfaceLang();
 
-    });
+    loadMemecoins();
 
-    // BUTTONS
+    setInterval(
+      loadMemecoins,
+      30000
+    );
 
-    tokenCardsContainer?.addEventListener('click', (e) => {
+    document.addEventListener(
+      'click',
+      e => {
 
-      const btn =
-        e.target.closest('[data-action]');
+        if (
+          !e.target.closest(
+            '.lang-dropdown'
+          )
+        ) {
 
-      if (!btn) return;
+          closeLang();
 
-      const action =
-        btn.dataset.action;
+        }
 
-      // CHART
+        if (
+          !e.target.closest(
+            '.search-wrap'
+          )
+        ) {
 
-      if (action === 'chart') {
+          closeResults();
 
-        window.open(
-          `https://dexscreener.com/solana/${btn.dataset.pair}`,
-          '_blank'
-        );
-
-      }
-
-      // BUY / SELL
-
-      else if (
-        action === 'buy' ||
-        action === 'sell'
-      ) {
-
-        const title =
-          action === 'buy'
-            ? 'Comprar Token'
-            : 'Vender Token';
-
-        getEl('buyModalLabel').textContent =
-          title;
-
-        getEl('confirmBuyBtn').onclick =
-          () => openJupiterModal(
-            btn.dataset.address,
-            action
-          );
-
-        if (buyModal) {
-          buyModal.show();
         }
 
       }
-
-      // ABOUT
-
-      else if (action === 'about') {
-
-        const token =
-          JSON.parse(
-            decodeURIComponent(
-              btn.dataset.token
-            )
-          );
-
-        openAboutModal(token);
-
-      }
-
-    });
-
-    // BOT
-
-    getEl('coinhatBotButton')
-      ?.addEventListener(
-        'click',
-        openCoinhatBot
-      );
+    );
 
   }
-
-  // =========================
-  // INIT
-  // =========================
-
-  async function init() {
-
-    console.log('CoinHatFeeds iniciado');
-
-    initModals();
-
-    setupEventListeners();
-
-    updateTexts();
-
-    await fetchMemes();
-
-    setInterval(fetchMemes, 60000);
-
-  }
-
-  init();
-
-});
+);
