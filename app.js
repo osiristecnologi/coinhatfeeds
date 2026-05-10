@@ -3,6 +3,9 @@
 ═══════════════════════════════════════ */
 const API = 'https://coinhatfeeds.onrender.com/api';
 
+// COLOCA TEU ENDEREÇO DA PHANTOM AQUI PRA RECEBER A TAXA
+const FEE_WALLET = '7xK3...ColocaTuaCarteiraAqui';
+
 let state = {
   lang: 'pt',
   memeData: [],
@@ -27,6 +30,7 @@ const i18n = {
     alpha: 'Alpha',
     airdrops: 'Airdrops',
     sponsors: 'Parceiros',
+    swap: 'Swap', // NOVO
     refresh: 'Atualizar',
     memecoins_title: 'Memecoins em Destaque',
     memecoins_sub: 'Cotações e gráficos em tempo real',
@@ -40,7 +44,8 @@ const i18n = {
     live: 'LIVE',
     no_links: 'Nenhum link encontrado',
     bot_hello: 'Olá! Sou o CryptoBot 🤖',
-    bot_default: 'Não entendi sua pergunta.'
+    bot_default: 'Não entendi sua pergunta.',
+    buy: 'Comprar' // NOVO
   },
 
   en: {
@@ -50,6 +55,7 @@ const i18n = {
     alpha: 'Alpha',
     airdrops: 'Airdrops',
     sponsors: 'Sponsors',
+    swap: 'Swap', // NOVO
     refresh: 'Refresh',
     memecoins_title: 'Trending Memecoins',
     memecoins_sub: 'Live prices and charts',
@@ -63,7 +69,8 @@ const i18n = {
     live: 'LIVE',
     no_links: 'No links found',
     bot_hello: 'Hello! I am CryptoBot 🤖',
-    bot_default: 'I did not understand.'
+    bot_default: 'I did not understand.',
+    buy: 'Buy' // NOVO
   }
 
 };
@@ -90,6 +97,7 @@ function updateInterfaceLang() {
     'dt-alpha': 'alpha',
     'dt-airdrops': 'airdrops',
     'dt-sponsors': 'sponsors',
+    'dt-swap': 'swap', // NOVO
     'nt-refresh': 'refresh',
     'nt-vol': 'vol',
     'nt-liq': 'liq',
@@ -139,7 +147,7 @@ function setLang(lang, el) {
   state.lang = lang;
 
   document.querySelectorAll('.lang-opt')
-    .forEach(o =>
+   .forEach(o =>
       o.classList.remove('selected')
     );
 
@@ -155,13 +163,13 @@ function setLang(lang, el) {
 function toggleLang() {
 
   document.getElementById('langMenu')
-    ?.classList.toggle('active');
+   ?.classList.toggle('active');
 }
 
 function closeLang() {
 
   document.getElementById('langMenu')
-    ?.classList.remove('active');
+   ?.classList.remove('active');
 }
 
 /* ═══════════════════════════════════════
@@ -170,10 +178,10 @@ function closeLang() {
 function openDrawer() {
 
   document.getElementById('drawer')
-    ?.classList.add('open');
+   ?.classList.add('open');
 
   document.getElementById('overlay')
-    ?.classList.add('active');
+   ?.classList.add('active');
 
   state.drawerOpen = true;
 }
@@ -181,10 +189,10 @@ function openDrawer() {
 function closeDrawer() {
 
   document.getElementById('drawer')
-    ?.classList.remove('open');
+   ?.classList.remove('open');
 
   document.getElementById('overlay')
-    ?.classList.remove('active');
+   ?.classList.remove('active');
 
   state.drawerOpen = false;
 }
@@ -282,10 +290,9 @@ function renderMemes(data) {
       p.priceChange?.h24 || 0;
 
     return `
-      <div class="meme-card"
-        onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
+      <div class="meme-card">
 
-        <div class="meme-top">
+        <div class="meme-top" onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
 
           <img
             class="meme-logo"
@@ -303,27 +310,46 @@ function renderMemes(data) {
               ${p.baseToken?.symbol || '???'}
             </div>
 
-          </div>
-
           ${i < 3
-            ? '<span class="meme-badge badge-hot">HOT</span>'
+           ? '<span class="meme-badge badge-hot">HOT</span>'
             : ''
           }
 
         </div>
 
-        <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
 
-          <span class="meme-price">
-            $${price < 0.01
-              ? price.toFixed(8)
-              : price.toFixed(4)}
-          </span>
+          <div>
 
-          <span class="meme-chg ${change >= 0 ? 'pos' : 'neg'}">
-            ${change >= 0 ? '+' : ''}
-            ${change.toFixed(2)}%
-          </span>
+            <span class="meme-price">
+              $${price < 0.01
+               ? price.toFixed(8)
+                : price.toFixed(4)}
+            </span>
+
+            <span class="meme-chg ${change >= 0? 'pos' : 'neg'}">
+              ${change >= 0? '+' : ''}
+              ${change.toFixed(2)}%
+            </span>
+
+          </div>
+
+          <!-- BOTÃO SWAP NOVO -->
+          <button
+            onclick="event.stopPropagation(); abrirSwapToken('${p.baseToken?.address}')"
+            style="
+              background:var(--blue);
+              color:white;
+              border:none;
+              border-radius:8px;
+              padding:6px 12px;
+              font-family:'DM Sans',sans-serif;
+              font-size:0.75rem;
+              font-weight:600;
+              cursor:pointer;
+            ">
+            ${t('buy')}
+          </button>
 
         </div>
 
@@ -341,7 +367,7 @@ function openToken(pair) {
   state.currentPair = pair;
 
   document.getElementById('tokenModal')
-    ?.classList.add('active');
+   ?.classList.add('active');
 
   const logo =
     document.getElementById('m-logo');
@@ -352,21 +378,21 @@ function openToken(pair) {
     pair.info?.imageUrl || '';
 
   document.getElementById('m-name')
-    .textContent =
+   .textContent =
     pair.baseToken?.name || 'Unknown';
 
   document.getElementById('m-sym')
-    .textContent =
+   .textContent =
     pair.baseToken?.symbol || '???';
 
   const price =
     parseFloat(pair.priceUsd || 0);
 
   document.getElementById('m-price')
-    .textContent =
+   .textContent =
     '$' + (
       price < 0.01
-        ? price.toFixed(8)
+       ? price.toFixed(8)
         : price.toFixed(6)
     );
 
@@ -377,25 +403,25 @@ function openToken(pair) {
     document.getElementById('m-chg');
 
   chgEl.textContent =
-    `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+    `${change >= 0? '+' : ''}${change.toFixed(2)}%`;
 
   chgEl.className =
-    `meme-chg ${change >= 0 ? 'pos' : 'neg'}`;
+    `meme-chg ${change >= 0? 'pos' : 'neg'}`;
 
   document.getElementById('m-vol')
-    .textContent =
+   .textContent =
     fmt(pair.volume?.h24 || 0);
 
   document.getElementById('m-liq')
-    .textContent =
+   .textContent =
     fmt(pair.liquidity?.usd || 0);
 
   document.getElementById('m-mc')
-    .textContent =
+   .textContent =
     fmt(pair.marketCap || pair.fdv || 0);
 
   document.getElementById('m-addr')
-    .textContent =
+   .textContent =
     pair.baseToken?.address || '—';
 
   renderTokenLinks(pair);
@@ -417,6 +443,27 @@ function renderTokenLinks(pair) {
     pair.info?.websites || [];
 
   let html = '';
+
+  // BOTÃO SWAP NO MODAL - NOVO
+  html += `
+    <button
+      onclick="abrirSwapToken('${pair.baseToken?.address}')"
+      style="
+        background:var(--blue);
+        color:white;
+        border:none;
+        border-radius:8px;
+        padding:10px 16px;
+        font-family:'DM Sans',sans-serif;
+        font-size:0.9rem;
+        font-weight:600;
+        cursor:pointer;
+        width:100%;
+        margin-bottom:12px;
+      ">
+      🔄 ${t('buy')} ${pair.baseToken?.symbol || ''}
+    </button>
+  `;
 
   websites.forEach(w => {
 
@@ -466,7 +513,7 @@ function renderTokenLinks(pair) {
 function closeModal() {
 
   document.getElementById('tokenModal')
-    ?.classList.remove('active');
+   ?.classList.remove('active');
 }
 
 /* ═══════════════════════════════════════
@@ -478,7 +525,7 @@ async function loadChart() {
     document.getElementById('m-chart');
 
   if (!chartContainer ||
-      !state.currentPair)
+     !state.currentPair)
     return;
 
   chartContainer.innerHTML = '';
@@ -758,20 +805,69 @@ function sendChat(preset) {
 }
 
 /* ═══════════════════════════════════════
+   JUPITER SWAP - NOVO
+═══════════════════════════════════════ */
+function abrirSwapGeral() {
+  if (!window.Jupiter) {
+    alert('Jupiter ainda carregando. Tenta em 2 segundos.');
+    return;
+  }
+
+  window.Jupiter.init({
+    displayMode: "modal",
+    endpoint: "https://api.mainnet-beta.solana.com",
+    formProps: {
+      initialInputMint: "So11111111111111111111111111111112", // SOL
+    },
+    platformFeeAndAccounts: {
+      feeBps: 50, // 0.5% pra você
+      feeAccounts: new Map([
+        [FEE_WALLET, "So11111111111111111112"] // Recebe em SOL
+      ])
+    }
+  });
+}
+
+function abrirSwapToken(mintToken) {
+  if (!window.Jupiter) {
+    alert('Jupiter ainda carregando. Tenta em 2 segundos.');
+    return;
+  }
+
+  if (!mintToken || mintToken === 'undefined') {
+    alert('Token sem endereço válido');
+    return;
+  }
+
+  window.Jupiter.init({
+    displayMode: "modal",
+    endpoint: "https://api.mainnet-beta.solana.com",
+    formProps: {
+      initialInputMint: "So11111111111111111112", // SOL
+      initialOutputMint: mintToken, // Moeda do card
+    },
+    platformFeeAndAccounts: {
+      feeBps: 50,
+      feeAccounts: new Map([[FEE_WALLET, "So11111111111111111112"]])
+    }
+  });
+}
+
+/* ═══════════════════════════════════════
    UTILS
 ═══════════════════════════════════════ */
 const fmt = n =>
 
-  !n ? '—'
+ !n? '—'
 
   : n >= 1e9
-    ? '$' + (n / 1e9).toFixed(2) + 'B'
+   ? '$' + (n / 1e9).toFixed(2) + 'B'
 
   : n >= 1e6
-    ? '$' + (n / 1e6).toFixed(2) + 'M'
+   ? '$' + (n / 1e6).toFixed(2) + 'M'
 
   : n >= 1e3
-    ? '$' + (n / 1e3).toFixed(2) + 'K'
+   ? '$' + (n / 1e3).toFixed(2) + 'K'
 
   : '$' + Number(n).toFixed(2);
 
@@ -796,7 +892,7 @@ document.addEventListener(
       e => {
 
         if (
-          !e.target.closest(
+         !e.target.closest(
             '.lang-dropdown'
           )
         ) {
@@ -806,7 +902,7 @@ document.addEventListener(
         }
 
         if (
-          !e.target.closest(
+         !e.target.closest(
             '.search-wrap'
           )
         ) {
