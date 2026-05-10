@@ -30,7 +30,7 @@ const i18n = {
     alpha: 'Alpha',
     airdrops: 'Airdrops',
     sponsors: 'Parceiros',
-    swap: 'Swap', // NOVO
+    swap: 'Swap',
     refresh: 'Atualizar',
     memecoins_title: 'Memecoins em Destaque',
     memecoins_sub: 'Cotações e gráficos em tempo real',
@@ -45,7 +45,7 @@ const i18n = {
     no_links: 'Nenhum link encontrado',
     bot_hello: 'Olá! Sou o CryptoBot 🤖',
     bot_default: 'Não entendi sua pergunta.',
-    buy: 'Comprar' // NOVO
+    buy: 'Comprar'
   },
 
   en: {
@@ -55,7 +55,7 @@ const i18n = {
     alpha: 'Alpha',
     airdrops: 'Airdrops',
     sponsors: 'Sponsors',
-    swap: 'Swap', // NOVO
+    swap: 'Swap',
     refresh: 'Refresh',
     memecoins_title: 'Trending Memecoins',
     memecoins_sub: 'Live prices and charts',
@@ -70,7 +70,7 @@ const i18n = {
     no_links: 'No links found',
     bot_hello: 'Hello! I am CryptoBot 🤖',
     bot_default: 'I did not understand.',
-    buy: 'Buy' // NOVO
+    buy: 'Buy'
   }
 
 };
@@ -97,7 +97,7 @@ function updateInterfaceLang() {
     'dt-alpha': 'alpha',
     'dt-airdrops': 'airdrops',
     'dt-sponsors': 'sponsors',
-    'dt-swap': 'swap', // NOVO
+    'dt-swap': 'swap',
     'nt-refresh': 'refresh',
     'nt-vol': 'vol',
     'nt-liq': 'liq',
@@ -147,7 +147,7 @@ function setLang(lang, el) {
   state.lang = lang;
 
   document.querySelectorAll('.lang-opt')
-   .forEach(o =>
+  .forEach(o =>
       o.classList.remove('selected')
     );
 
@@ -163,13 +163,13 @@ function setLang(lang, el) {
 function toggleLang() {
 
   document.getElementById('langMenu')
-   ?.classList.toggle('active');
+  ?.classList.toggle('active');
 }
 
 function closeLang() {
 
   document.getElementById('langMenu')
-   ?.classList.remove('active');
+  ?.classList.remove('active');
 }
 
 /* ═══════════════════════════════════════
@@ -178,10 +178,10 @@ function closeLang() {
 function openDrawer() {
 
   document.getElementById('drawer')
-   ?.classList.add('open');
+  ?.classList.add('open');
 
   document.getElementById('overlay')
-   ?.classList.add('active');
+  ?.classList.add('active');
 
   state.drawerOpen = true;
 }
@@ -189,10 +189,10 @@ function openDrawer() {
 function closeDrawer() {
 
   document.getElementById('drawer')
-   ?.classList.remove('open');
+  ?.classList.remove('open');
 
   document.getElementById('overlay')
-   ?.classList.remove('active');
+  ?.classList.remove('active');
 
   state.drawerOpen = false;
 }
@@ -310,12 +310,14 @@ function renderMemes(data) {
               ${p.baseToken?.symbol || '???'}
             </div>
 
+          </div>
+
           ${i < 3
-           ? '<span class="meme-badge badge-hot">HOT</span>'
+          ? '<span class="meme-badge badge-hot">HOT</span>'
             : ''
           }
 
-        </div>
+        </div> <!-- FECHEI A meme-top -->
 
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
 
@@ -323,7 +325,7 @@ function renderMemes(data) {
 
             <span class="meme-price">
               $${price < 0.01
-               ? price.toFixed(8)
+              ? price.toFixed(8)
                 : price.toFixed(4)}
             </span>
 
@@ -334,7 +336,6 @@ function renderMemes(data) {
 
           </div>
 
-          <!-- BOTÃO SWAP NOVO -->
           <button
             onclick="event.stopPropagation(); abrirSwapToken('${p.baseToken?.address}')"
             style="
@@ -351,9 +352,9 @@ function renderMemes(data) {
             ${t('buy')}
           </button>
 
-        </div>
+        </div> <!-- FECHEI A DIV DO PREÇO/BOTÃO -->
 
-      </div>
+      </div> <!-- FECHEI A meme-card - ESSA TAVA FALTANDO -->
     `;
 
   }).join('');
@@ -367,7 +368,7 @@ function openToken(pair) {
   state.currentPair = pair;
 
   document.getElementById('tokenModal')
-   ?.classList.add('active');
+  ?.classList.add('active');
 
   const logo =
     document.getElementById('m-logo');
@@ -378,21 +379,21 @@ function openToken(pair) {
     pair.info?.imageUrl || '';
 
   document.getElementById('m-name')
-   .textContent =
+  .textContent =
     pair.baseToken?.name || 'Unknown';
 
   document.getElementById('m-sym')
-   .textContent =
+  .textContent =
     pair.baseToken?.symbol || '???';
 
   const price =
     parseFloat(pair.priceUsd || 0);
 
   document.getElementById('m-price')
-   .textContent =
+  .textContent =
     '$' + (
       price < 0.01
-       ? price.toFixed(8)
+      ? price.toFixed(8)
         : price.toFixed(6)
     );
 
@@ -409,19 +410,19 @@ function openToken(pair) {
     `meme-chg ${change >= 0? 'pos' : 'neg'}`;
 
   document.getElementById('m-vol')
-   .textContent =
+  .textContent =
     fmt(pair.volume?.h24 || 0);
 
   document.getElementById('m-liq')
-   .textContent =
+  .textContent =
     fmt(pair.liquidity?.usd || 0);
 
   document.getElementById('m-mc')
-   .textContent =
+  .textContent =
     fmt(pair.marketCap || pair.fdv || 0);
 
   document.getElementById('m-addr')
-   .textContent =
+  .textContent =
     pair.baseToken?.address || '—';
 
   renderTokenLinks(pair);
@@ -444,7 +445,7 @@ function renderTokenLinks(pair) {
 
   let html = '';
 
-  // BOTÃO SWAP NO MODAL - NOVO
+  // BOTÃO SWAP NO MODAL
   html += `
     <button
       onclick="abrirSwapToken('${pair.baseToken?.address}')"
@@ -513,7 +514,7 @@ function renderTokenLinks(pair) {
 function closeModal() {
 
   document.getElementById('tokenModal')
-   ?.classList.remove('active');
+  ?.classList.remove('active');
 }
 
 /* ═══════════════════════════════════════
@@ -525,7 +526,7 @@ async function loadChart() {
     document.getElementById('m-chart');
 
   if (!chartContainer ||
-     !state.currentPair)
+    !state.currentPair)
     return;
 
   chartContainer.innerHTML = '';
@@ -805,7 +806,7 @@ function sendChat(preset) {
 }
 
 /* ═══════════════════════════════════════
-   JUPITER SWAP - NOVO
+   JUPITER SWAP
 ═══════════════════════════════════════ */
 function abrirSwapGeral() {
   if (!window.Jupiter) {
@@ -817,12 +818,12 @@ function abrirSwapGeral() {
     displayMode: "modal",
     endpoint: "https://api.mainnet-beta.solana.com",
     formProps: {
-      initialInputMint: "So11111111111111111111111111111112", // SOL
+      initialInputMint: "So11111111111111111112", // SOL
     },
     platformFeeAndAccounts: {
       feeBps: 50, // 0.5% pra você
       feeAccounts: new Map([
-        [FEE_WALLET, "So11111111111111111112"] // Recebe em SOL
+        [FEE_WALLET, "So11111111111111111111111111112"] // Recebe em SOL
       ])
     }
   });
@@ -858,16 +859,16 @@ function abrirSwapToken(mintToken) {
 ═══════════════════════════════════════ */
 const fmt = n =>
 
- !n? '—'
+!n? '—'
 
   : n >= 1e9
-   ? '$' + (n / 1e9).toFixed(2) + 'B'
+  ? '$' + (n / 1e9).toFixed(2) + 'B'
 
   : n >= 1e6
-   ? '$' + (n / 1e6).toFixed(2) + 'M'
+  ? '$' + (n / 1e6).toFixed(2) + 'M'
 
   : n >= 1e3
-   ? '$' + (n / 1e3).toFixed(2) + 'K'
+  ? '$' + (n / 1e3).toFixed(2) + 'K'
 
   : '$' + Number(n).toFixed(2);
 
@@ -892,7 +893,7 @@ document.addEventListener(
       e => {
 
         if (
-         !e.target.closest(
+        !e.target.closest(
             '.lang-dropdown'
           )
         ) {
@@ -902,7 +903,7 @@ document.addEventListener(
         }
 
         if (
-         !e.target.closest(
+        !e.target.closest(
             '.search-wrap'
           )
         ) {
