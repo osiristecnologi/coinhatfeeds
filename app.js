@@ -89,6 +89,7 @@ function openDrawer() {
   document.getElementById('drawer')?.classList.add('open');
   document.getElementById('overlay')?.classList.add('active');
   state.drawerOpen = true;
+  if (state.activeTab) loadDrawerContent(state.activeTab);
 }
 
 function closeDrawer() {
@@ -131,6 +132,7 @@ async function loadDrawerContent(tab) {
       <div class="drawer-item">
         <div class="drawer-item-title">${item.title || item.name || 'Sem título'}</div>
         <div class="drawer-item-desc">${item.description || item.desc || ''}</div>
+        ${item.url? `<a href="${item.url}" target="_blank" class="drawer-item-link">Acessar</a>` : ''}
       </div>
     `).join('');
 
@@ -372,7 +374,7 @@ function closeResults() {
 }
 
 /* ═══════════════════════════════════════
-   CHATBOT
+   CHATBOT - ARRUMADO
 ═══════════════════════════════════════ */
 function toggleChat() {
   const win = document.getElementById('chatWindow');
@@ -416,7 +418,22 @@ function sendChat(preset) {
   input.value = '';
 
   setTimeout(() => {
-    addBotMsg(t('bot_default'));
+    const lower = msg.toLowerCase();
+    let reply = t('bot_default');
+
+    if (lower.includes('bitcoin') || lower.includes('btc')) {
+      reply = state.lang === 'pt'? 'Bitcoin tá dominando. Quer ver o preço? Busca "BTC" ali em cima.' : 'Bitcoin is dominating. Want to check price? Search "BTC" above.';
+    } else if (lower.includes('solana') || lower.includes('sol')) {
+      reply = state.lang === 'pt'? 'Solana é onde as memecoins nascem. Clica numa moeda pra ver o gráfico.' : 'Solana is where memecoins are born. Click a token to see the chart.';
+    } else if (lower.includes('comprar') || lower.includes('buy') || lower.includes('swap')) {
+      reply = state.lang === 'pt'? 'Clica no botão "Comprar" do token que quiser. Abre direto no Jupiter com 0.5% de taxa pra nós.' : 'Click the "Buy" button on any token. Opens Jupiter directly with 0.5% fee for us.';
+    } else if (lower.includes('oi') || lower.includes('ola') || lower.includes('hello') || lower.includes('hey')) {
+      reply = t('bot_hello');
+    } else if (lower.includes('taxa') || lower.includes('fee')) {
+      reply = state.lang === 'pt'? 'Taxa de 0.5% em cada swap via Jupiter. Vai direto pra carteira do projeto.' : '0.5% fee on each Jupiter swap. Goes to project wallet.';
+    }
+
+    addBotMsg(reply);
   }, 500);
 }
 
