@@ -1,822 +1,138 @@
-/* ═══════════════════════════════════════
-   CONFIG
-═══════════════════════════════════════ */
-const API = 'https://coinhatfeeds.onrender.com/api';
-
-let state = {
-  lang: 'pt',
-  memeData: [],
-  currentPair: null,
-  currentTf: 'm5',
-  activeTab: 'news',
-  cache: {},
-  fetched: {},
-  drawerOpen: false,
-  chartInstance: null
-};
-
-/* ═══════════════════════════════════════
-   I18N
-═══════════════════════════════════════ */
-const i18n = {
-
-  pt: {
-    search: 'Buscar token...',
-    news: 'Notícias',
-    presales: 'Pré-vendas',
-    alpha: 'Alpha',
-    airdrops: 'Airdrops',
-    sponsors: 'Parceiros',
-    refresh: 'Atualizar',
-    memecoins_title: 'Memecoins em Destaque',
-    memecoins_sub: 'Cotações e gráficos em tempo real',
-    vol: 'Vol 24h',
-    liq: 'Liquidez',
-    mc: 'Mkt Cap',
-    contract: 'Contrato',
-    chart_btn: 'Ver gráfico avançado',
-    loading: 'Carregando...',
-    no_data: 'Nenhum dado encontrado',
-    live: 'LIVE',
-    no_links: 'Nenhum link encontrado',
-    bot_hello: 'Olá! Sou o CryptoBot 🤖',
-    bot_default: 'Não entendi sua pergunta.'
-  },
-
-  en: {
-    search: 'Search token...',
-    news: 'News',
-    presales: 'Presales',
-    alpha: 'Alpha',
-    airdrops: 'Airdrops',
-    sponsors: 'Sponsors',
-    refresh: 'Refresh',
-    memecoins_title: 'Trending Memecoins',
-    memecoins_sub: 'Live prices and charts',
-    vol: '24h Vol',
-    liq: 'Liquidity',
-    mc: 'Market Cap',
-    contract: 'Contract',
-    chart_btn: 'Open advanced chart',
-    loading: 'Loading...',
-    no_data: 'No data found',
-    live: 'LIVE',
-    no_links: 'No links found',
-    bot_hello: 'Hello! I am CryptoBot 🤖',
-    bot_default: 'I did not understand.'
-  }
-
-};
-
-function t(key) {
-  return (i18n[state.lang] || i18n.pt)[key] || key;
-}
-
-/* ═══════════════════════════════════════
-   LANGUAGE
-═══════════════════════════════════════ */
-function updateInterfaceLang() {
-
-  const searchInput =
-    document.getElementById('searchInput');
-
-  if (searchInput) {
-    searchInput.placeholder = t('search');
-  }
-
-  const map = {
-    'dt-news': 'news',
-    'dt-presales': 'presales',
-    'dt-alpha': 'alpha',
-    'dt-airdrops': 'airdrops',
-    'dt-sponsors': 'sponsors',
-    'nt-refresh': 'refresh',
-    'nt-vol': 'vol',
-    'nt-liq': 'liq',
-    'nt-mc': 'mc',
-    'nt-contract': 'contract',
-    'dexBtnLabel': 'chart_btn'
-  };
-
-  Object.entries(map).forEach(([id, key]) => {
-
-    const el = document.getElementById(id);
-
-    if (el) {
-      el.textContent = t(key);
-    }
-
-  });
-
-  const titleEl =
-    document.querySelector('.section-title');
-
-  if (titleEl) {
-
-    titleEl.innerHTML = `
-      🔥 ${t('memecoins_title')}
-    `;
-  }
-
-  const subEl =
-    document.querySelector('.section-sub');
-
-  if (subEl) {
-
-    subEl.innerHTML = `
-      ${t('memecoins_sub')}
-      ·
-      <span class="live">
-        <span class="live-dot"></span>
-        ${t('live')}
-      </span>
-    `;
-  }
-}
-
-function setLang(lang, el) {
-
-  state.lang = lang;
-
-  document.querySelectorAll('.lang-opt')
-    .forEach(o =>
-      o.classList.remove('selected')
-    );
-
-  if (el) {
-    el.classList.add('selected');
-  }
-
-  updateInterfaceLang();
-
-  closeLang();
-}
-
-function toggleLang() {
-
-  document.getElementById('langMenu')
-    ?.classList.toggle('active');
-}
-
-function closeLang() {
-
-  document.getElementById('langMenu')
-    ?.classList.remove('active');
-}
-
-/* ═══════════════════════════════════════
-   DRAWER
-═══════════════════════════════════════ */
+// ══════════════════ DRAWER ══════════════════
 function openDrawer() {
-
-  document.getElementById('drawer')
-    ?.classList.add('open');
-
-  document.getElementById('overlay')
-    ?.classList.add('active');
-
-  state.drawerOpen = true;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('overlay').classList.add('active');
 }
 
 function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
 
-  document.getElementById('drawer')
-    ?.classList.remove('open');
+// ══════════════════ FULLSCREEN ══════════════════
+function switchDrawerTab(tab, btn) {
+  document.querySelectorAll('.dtab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  closeDrawer();
+  openFull(tab);
+}
 
-  document.getElementById('overlay')
-    ?.classList.remove('active');
+async function openFull(tab) {
+  const full = document.getElementById('fullScreen');
+  const body = document.getElementById('fullBody');
+  const title = document.getElementById('fullTitle');
+  
+  full.classList.add('active');
+  body.innerHTML = '<div style="padding:20px;color:#9fb3c8">Carregando...</div>';
+  
+  if (tab === 'swap') {
+    title.textContent = 'Swap';
+    body.innerHTML = `
+      <div style="padding:16px">
+        <div style="background:#1a2234;padding:16px;border-radius:12px;margin-bottom:12px">
+          <div style="font-size:12px;color:#9fb3c8;margin-bottom:8px">Você paga</div>
+          <div style="display:flex;gap:8px">
+            <input id="swapIn" style="flex:1;background:#0a0f1c;border:1px solid #2a3344;color:#fff;padding:12px;border-radius:8px;font-size:18px" placeholder="0.0" type="number"/>
+            <button style="background:#2a3344;border:0;color:#fff;padding:0 16px;border-radius:8px;font-weight:600">SOL</button>
+          </div>
+        </div>
+        <div style="text-align:center;margin:8px 0;font-size:20px">↓</div>
+        <div style="background:#1a2234;padding:16px;border-radius:12px;margin-bottom:16px">
+          <div style="font-size:12px;color:#9fb3c8;margin-bottom:8px">Você recebe</div>
+          <div style="display:flex;gap:8px">
+            <input id="swapOut" style="flex:1;background:#0a0f1c;border:1px solid #2a3344;color:#fff;padding:12px;border-radius:8px;font-size:18px" placeholder="0.0" disabled/>
+            <button style="background:#2a3344;border:0;color:#fff;padding:0 16px;border-radius:8px;font-weight:600">USDC</button>
+          </div>
+        </div>
+        <button style="width:100%;background:#1a6bff;border:0;color:#fff;padding:14px;border-radius:12px;font-weight:600;font-size:16px">Conectar Carteira</button>
+        <div style="font-size:11px;color:#9fb3c8;text-align:center;margin-top:12px">Powered by Jupiter</div>
+      </div>
+    `;
+  }
+  
+  if (tab === 'news') {
+    title.textContent = 'Notícias Twitter';
+    try {
+      const res = await fetch('/api/news?source=twitter');
+      const data = await res.json();
+      if (!data.length) {
+        body.innerHTML = '<div style="padding:20px;color:#ff5050">Sem notícias. Verifica API.</div>';
+        return;
+      }
+      body.innerHTML = data.map(t => `
+        <div style="border-bottom:1px solid #2a3344;padding:16px">
+          <div style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
+            <img src="${t.avatar||''}" style="width:32px;height:32px;border-radius:50%;background:#2a3344" onerror="this.style.display='none'">
+            <div>
+              <div style="font-weight:600">${t.author||t.source} ${t.verified?'✓':''}</div>
+              <div style="font-size:12px;color:#9fb3c8">${t.handle} · ${new Date(t.publishedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+            </div>
+          </div>
+          <div style="margin:8px 0;line-height:1.4">${t.summary}</div>
+          <div style="font-size:12px;color:#9fb3c8">❤️ ${t.likes||0} 🔁 ${t.retweets||0} 💬 ${t.replies||0}</div>
+        </div>
+      `).join('');
+    } catch(e) {
+      body.innerHTML = `<div style="padding:20px;color:#ff5050">Erro: ${e.message}</div>`;
+    }
+  }
+  
+  if (tab === 'alpha') {
+    title.textContent = 'Alpha';
+    body.innerHTML = '<div style="padding:20px">Calls de alpha em breve...</div>';
+  }
+  
+  if (tab === 'airdrops') {
+    title.textContent = 'Airdrops';
+    body.innerHTML = '<div style="padding:20px">Lista de airdrops em breve...</div>';
+  }
+  
+  if (tab === 'sponsors') {
+    title.textContent = 'Parceiros';
+    body.innerHTML = '<div style="padding:20px">Parceiros oficiais em breve...</div>';
+  }
+  
+  if (tab === 'presales') {
+    title.textContent = 'Pré-vendas';
+    body.innerHTML = '<div style="padding:20px">Pré-vendas ativas em breve...</div>';
+  }
+}
 
-  state.drawerOpen = false;
+function closeFull() {
+  document.getElementById('fullScreen').classList.remove('active');
 }
 
 function closeAll() {
-
   closeDrawer();
+  closeFull();
   closeModal();
-  closeLang();
-  closeResults();
 }
 
-/* ═══════════════════════════════════════
-   MEMECOINS
-═══════════════════════════════════════ */
-async function loadMemecoins() {
-
-  const container =
-    document.getElementById('memeGrid');
-
-  if (!container) return;
-
-  container.innerHTML = `
-    <div class="loading-box">
-      ${t('loading')}
-    </div>
-  `;
-
-  try {
-
-    const boostRes = await fetch(
-      'https://api.dexscreener.com/token-boosts/latest/v1'
-    );
-
-    const boosts = await boostRes.json();
-
-    const selected = boosts.slice(0, 12);
-
-    const pairsPromises =
-      selected.map(async token => {
-
-        try {
-
-          const res = await fetch(
-            `https://api.dexscreener.com/latest/dex/search?q=${token.tokenAddress}`
-          );
-
-          const data = await res.json();
-
-          return data.pairs?.[0] || null;
-
-        } catch {
-
-          return null;
-
-        }
-
-      });
-
-    const pairs =
-      await Promise.all(pairsPromises);
-
-    const validPairs =
-      pairs.filter(Boolean);
-
-    state.memeData = validPairs;
-
-    renderMemes(validPairs);
-
-  } catch (err) {
-
-    console.error(err);
-
-    container.innerHTML = `
-      <div class="error-box">
-        Erro ao carregar memecoins
-      </div>
-    `;
-  }
-}
-
-function renderMemes(data) {
-
-  const container =
-    document.getElementById('memeGrid');
-
-  if (!container) return;
-
-  container.innerHTML = data.map((p, i) => {
-
-    const price =
-      parseFloat(p.priceUsd || 0);
-
-    const change =
-      p.priceChange?.h24 || 0;
-
-    return `
-      <div class="meme-card"
-        onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
-
-        <div class="meme-top">
-
-          <img
-            class="meme-logo"
-            src="${p.info?.imageUrl || ''}"
-            onerror="this.style.display='none'"
-          >
-
-          <div>
-
-            <div class="meme-name">
-              ${p.baseToken?.name || 'Unknown'}
-            </div>
-
-            <div class="meme-sym">
-              ${p.baseToken?.symbol || '???'}
-            </div>
-
-          </div>
-
-          ${i < 3
-            ? '<span class="meme-badge badge-hot">HOT</span>'
-            : ''
-          }
-
-        </div>
-
-        <div>
-
-          <span class="meme-price">
-            $${price < 0.01
-              ? price.toFixed(8)
-              : price.toFixed(4)}
-          </span>
-
-          <span class="meme-chg ${change >= 0 ? 'pos' : 'neg'}">
-            ${change >= 0 ? '+' : ''}
-            ${change.toFixed(2)}%
-          </span>
-
-        </div>
-
-      </div>
-    `;
-
-  }).join('');
-}
-
-/* ═══════════════════════════════════════
-   TOKEN MODAL
-═══════════════════════════════════════ */
-function openToken(pair) {
-
-  state.currentPair = pair;
-
-  document.getElementById('tokenModal')
-    ?.classList.add('active');
-
-  const logo =
-    document.getElementById('m-logo');
-
-  logo.style.display = 'block';
-
-  logo.src =
-    pair.info?.imageUrl || '';
-
-  document.getElementById('m-name')
-    .textContent =
-    pair.baseToken?.name || 'Unknown';
-
-  document.getElementById('m-sym')
-    .textContent =
-    pair.baseToken?.symbol || '???';
-
-  const price =
-    parseFloat(pair.priceUsd || 0);
-
-  document.getElementById('m-price')
-    .textContent =
-    '$' + (
-      price < 0.01
-        ? price.toFixed(8)
-        : price.toFixed(6)
-    );
-
-  const change =
-    pair.priceChange?.h24 || 0;
-
-  const chgEl =
-    document.getElementById('m-chg');
-
-  chgEl.textContent =
-    `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
-
-  chgEl.className =
-    `meme-chg ${change >= 0 ? 'pos' : 'neg'}`;
-
-  document.getElementById('m-vol')
-    .textContent =
-    fmt(pair.volume?.h24 || 0);
-
-  document.getElementById('m-liq')
-    .textContent =
-    fmt(pair.liquidity?.usd || 0);
-
-  document.getElementById('m-mc')
-    .textContent =
-    fmt(pair.marketCap || pair.fdv || 0);
-
-  document.getElementById('m-addr')
-    .textContent =
-    pair.baseToken?.address || '—';
-
-  renderTokenLinks(pair);
-
-  loadChart();
-}
-
-function renderTokenLinks(pair) {
-
-  const links =
-    document.getElementById('m-links');
-
-  if (!links) return;
-
-  const socials =
-    pair.info?.socials || [];
-
-  const websites =
-    pair.info?.websites || [];
-
-  let html = '';
-
-  websites.forEach(w => {
-
-    html += `
-      <a href="${w.url}"
-         target="_blank"
-         class="token-link">
-         🌐 Website
-      </a>
-    `;
-  });
-
-  socials.forEach(s => {
-
-    let icon = '🔗';
-
-    if (s.type === 'twitter')
-      icon = '𝕏';
-
-    if (s.type === 'telegram')
-      icon = '✈️';
-
-    if (s.type === 'discord')
-      icon = '💬';
-
-    html += `
-      <a href="${s.url}"
-         target="_blank"
-         class="token-link">
-         ${icon} ${s.type}
-      </a>
-    `;
-  });
-
-  if (!html) {
-
-    html = `
-      <div style="opacity:.7;padding:8px 0;">
-        ${t('no_links')}
-      </div>
-    `;
-  }
-
-  links.innerHTML = html;
-}
-
+// ══════════════════ MODAL MEMECOIN ══════════════════
 function closeModal() {
-
-  document.getElementById('tokenModal')
-    ?.classList.remove('active');
+  document.getElementById('tokenModal').classList.remove('active');
 }
 
-/* ═══════════════════════════════════════
-   CHART SEM DEXSCREENER
-═══════════════════════════════════════ */
-async function loadChart() {
-
-  const chartContainer =
-    document.getElementById('m-chart');
-
-  if (!chartContainer ||
-      !state.currentPair)
-    return;
-
-  chartContainer.innerHTML = '';
-
-  const chartDiv =
-    document.createElement('div');
-
-  chartDiv.style.width = '100%';
-  chartDiv.style.height = '100%';
-
-  chartContainer.appendChild(chartDiv);
-
-  const chart =
-    LightweightCharts.createChart(
-      chartDiv,
-      {
-        width: chartContainer.clientWidth,
-        height: 320,
-
-        layout: {
-          background: {
-            color: '#0f172a'
-          },
-          textColor: '#94a3b8'
-        },
-
-        grid: {
-          vertLines: {
-            color: '#1e293b'
-          },
-          horzLines: {
-            color: '#1e293b'
-          }
-        },
-
-        crosshair: {
-          mode: 1
-        },
-
-        rightPriceScale: {
-          borderColor: '#334155'
-        },
-
-        timeScale: {
-          borderColor: '#334155'
-        }
-      }
-    );
-
-  state.chartInstance = chart;
-
-  const areaSeries =
-    chart.addAreaSeries({
-
-      lineColor: '#2563eb',
-
-      topColor:
-        'rgba(37,99,235,0.45)',
-
-      bottomColor:
-        'rgba(37,99,235,0.02)',
-
-      lineWidth: 3
-    });
-
-  const currentPrice =
-    parseFloat(
-      state.currentPair.priceUsd || 0
-    );
-
-  const data = [];
-
-  let base =
-    currentPrice || 0.0001;
-
-  for (let i = 0; i < 40; i++) {
-
-    base =
-      base +
-      (Math.random() - 0.5) *
-      (base * 0.08);
-
-    data.push({
-      time:
-        Math.floor(Date.now() / 1000) -
-        (40 - i) * 60,
-
-      value:
-        Number(base.toFixed(8))
-    });
-  }
-
-  areaSeries.setData(data);
-
-  window.addEventListener(
-    'resize',
-    () => {
-
-      chart.applyOptions({
-        width:
-          chartContainer.clientWidth
-      });
-
-    }
-  );
-}
-
-/* ═══════════════════════════════════════
-   SEARCH
-═══════════════════════════════════════ */
-let searchTimeout;
-
-function onSearch(q) {
-
-  clearTimeout(searchTimeout);
-
-  if (q.length < 2) {
-
-    closeResults();
-
-    return;
-  }
-
-  searchTimeout =
-    setTimeout(async () => {
-
-      try {
-
-        const res = await fetch(
-          `https://api.dexscreener.com/latest/dex/search?q=${q}`
-        );
-
-        const data =
-          await res.json();
-
-        renderSearch(
-          data.pairs || []
-        );
-
-      } catch (err) {
-
-        console.error(err);
-
-      }
-
-    }, 400);
-}
-
-function renderSearch(pairs) {
-
-  const container =
-    document.getElementById(
-      'search-results'
-    );
-
-  if (!container) return;
-
-  container.innerHTML =
-    pairs.slice(0, 8).map(p => `
-      <div class="sr-item"
-        onclick='openToken(${JSON.stringify(p).replace(/'/g, "&apos;")});closeResults()'>
-
-        <div class="sr-name">
-          ${p.baseToken?.name || 'Unknown'}
-        </div>
-
-        <div class="sr-price">
-          $${parseFloat(p.priceUsd || 0).toFixed(6)}
-        </div>
-
+// ══════════════════ MEMECOINS ══════════════════
+async function loadMemecoins() {
+  const grid = document.getElementById('memeGrid');
+  grid.innerHTML = '<div class="loading-box">Carregando...</div>';
+  try {
+    const res = await fetch('/api/memecoins'); // tua API
+    const coins = await res.json();
+    grid.innerHTML = coins.map(c => `
+      <div class="coin-card" onclick="openCoinModal('${c.id}')">
+        <img src="${c.image}" style="width:40px;height:40px;border-radius:50%">
+        <div style="font-weight:600">${c.name}</div>
+        <div style="font-size:12px;color:#9fb3c8">${c.symbol}</div>
+        <div style="font-size:18px;font-weight:700;margin-top:8px">$${c.price}</div>
+        <div style="color:${c.change>0?'#00d395':'#ff5050'};font-size:14px">${c.change>0?'+':''}${c.change}%</div>
       </div>
     `).join('');
-
-  container.classList.add('active');
-}
-
-function closeResults() {
-
-  document.getElementById(
-    'search-results'
-  )?.classList.remove('active');
-}
-
-/* ═══════════════════════════════════════
-   CHATBOT
-═══════════════════════════════════════ */
-function toggleChat() {
-
-  const win =
-    document.getElementById(
-      'chatWindow'
-    );
-
-  if (!win) return;
-
-  win.classList.toggle('open');
-
-  if (
-    win.classList.contains('open') &&
-    document.getElementById(
-      'chatMessages'
-    ).children.length === 0
-  ) {
-
-    addBotMsg(t('bot_hello'));
-
+  } catch(e) {
+    grid.innerHTML = '<div class="loading-box" style="color:#ff5050">Erro ao carregar</div>';
   }
 }
 
-function addBotMsg(text) {
-
-  const msgs =
-    document.getElementById(
-      'chatMessages'
-    );
-
-  if (!msgs) return;
-
-  const div =
-    document.createElement('div');
-
-  div.className = 'chat-msg bot';
-
-  div.textContent = text;
-
-  msgs.appendChild(div);
-
-  msgs.scrollTop =
-    msgs.scrollHeight;
-}
-
-function addUserMsg(text) {
-
-  const msgs =
-    document.getElementById(
-      'chatMessages'
-    );
-
-  if (!msgs) return;
-
-  const div =
-    document.createElement('div');
-
-  div.className = 'chat-msg user';
-
-  div.textContent = text;
-
-  msgs.appendChild(div);
-
-  msgs.scrollTop =
-    msgs.scrollHeight;
-}
-
-function sendChat(preset) {
-
-  const input =
-    document.getElementById(
-      'chatInput'
-    );
-
-  const msg =
-    preset || input.value.trim();
-
-  if (!msg) return;
-
-  addUserMsg(msg);
-
-  input.value = '';
-
-  setTimeout(() => {
-
-    addBotMsg(
-      t('bot_default')
-    );
-
-  }, 500);
-}
-
-/* ═══════════════════════════════════════
-   UTILS
-═══════════════════════════════════════ */
-const fmt = n =>
-
-  !n ? '—'
-
-  : n >= 1e9
-    ? '$' + (n / 1e9).toFixed(2) + 'B'
-
-  : n >= 1e6
-    ? '$' + (n / 1e6).toFixed(2) + 'M'
-
-  : n >= 1e3
-    ? '$' + (n / 1e3).toFixed(2) + 'K'
-
-  : '$' + Number(n).toFixed(2);
-
-/* ═══════════════════════════════════════
-   INIT
-═══════════════════════════════════════ */
-document.addEventListener(
-  'DOMContentLoaded',
-  () => {
-
-    updateInterfaceLang();
-
-    loadMemecoins();
-
-    setInterval(
-      loadMemecoins,
-      30000
-    );
-
-    document.addEventListener(
-      'click',
-      e => {
-
-        if (
-          !e.target.closest(
-            '.lang-dropdown'
-          )
-        ) {
-
-          closeLang();
-
-        }
-
-        if (
-          !e.target.closest(
-            '.search-wrap'
-          )
-        ) {
-
-          closeResults();
-
-        }
-
-      }
-    );
-
-  }
-);
+// ══════════════════ INIT ══════════════════
+loadMemecoins();
