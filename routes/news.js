@@ -4,7 +4,9 @@ const newsService = require('../services/newsService');
 
 router.get('/', async (req, res) => {
   try {
-    const news = await newsService.getNews();
+    const lang = req.query.lang || 'pt';
+    const source = req.query.source || 'all';
+    const news = await newsService.getNews(lang, source);
     res.json(news);
   } catch (error) {
     console.error('Erro na rota /api/news:', error);
