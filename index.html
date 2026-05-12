@@ -1,1 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+
+<title>coinhatfeeds</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+<link rel="stylesheet" href="style.css"/>
+
+<!-- CHART -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<!-- ══════════════════ OVERLAY ══════════════════ -->
+<div
+  class="overlay"
+  id="overlay"
+  onclick="closeAll()">
+</div>
+
+<!-- ══════════════════ DRAWER ══════════════════ -->
+<div class="drawer" id="drawer">
+
+  <div class="drawer-header">
+
+    <div class="drawer-logo">
+      ☰ coinhatfeeds
+    </div>
+
+    <button
+      class="drawer-close"
+      onclick="closeDrawer()">
+      ✕
+    </button>
+
+  </div>
+
+  <!-- TABS -->
+  <div class="drawer-tabs" id="drawerTabs">
+
+    <button
+      class="dtab active"
+      data-tab="news"
+      onclick="switchDrawerTab('news',this)">
+      📰
+      <span id="dt-news">Notícias</span>
+    </button>
+
+    <button
+      class="dtab"
+      data-tab="presales"
+      onclick="switchDrawerTab('presales',this)">
+      🚀
+      <span id="dt-presales">Pré-vendas</span>
+    </button>
+
+    <button
+      class="dtab"
+      data-tab="alpha"
+      onclick="switchDrawerTab('alpha',this)">
+      ⚡
+      <span id="dt-alpha">Alpha</span>
+    </button>
+
+    <button
+      class="dtab"
+      data-tab="airdrops"
+      onclick="switchDrawerTab('airdrops',this)">
+      🎁
+      <span id="dt-airdrops">Airdrops</span>
+    </button>
+
+    <button
+      class="dtab"
+      data-tab="sponsors"
+      onclick="switchDrawerTab('sponsors',this)">
+      💎
+      <span id="dt-sponsors">Parceiros</span>
+    </button>
+
+  </div>
+
+  <!-- CONTENT -->
+  <div class="drawer-body" id="drawerBody"></div>
+
+</div>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header>
+
+  <div class="header-left">
+
+    <button
+      class="icon-btn"
+      id="menuBtn"
+      onclick="openDrawer()"
+      title="Menu">
+
+      <span class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+
+      <span
+        class="notif-dot"
+        id="menuDot">
+      </span>
+
+    </button>
+
+    <div class="logo">
+      coinhatfeeds
+    </div>
+
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+
+    <span class="search-icon">
+      🔍
+    </span>
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Buscar token..."
+      autocomplete="off"
+      oninput="onSearch(this.value)"
+      onfocus="showResults()"
+    />
+
+    <div id="search-results"></div>
+
+  </div>
+
+  <!-- LANG -->
+  <div class="header-right">
+
+    <div class="lang-dropdown">
+
+      <button
+        class="icon-btn"
+        onclick="toggleLang()"
+        title="Idioma">
+        🌐
+      </button>
+
+      <div class="lang-menu" id="langMenu">
+
+        <div
+          class="lang-opt selected"
+          onclick="setLang('pt',this)">
+          🇧🇷 Português
+        </div>
+
+        <div
+          class="lang-opt"
+          onclick="setLang('en',this)">
+          🇺🇸 English
+        </div>
+
+        <div
+          class="lang-opt"
+          onclick="setLang('es',this)">
+          🇪🇸 Español
+        </div>
+
+        <div
+          class="lang-opt"
+          onclick="setLang('zh',this)">
+          🇨🇳 中文
+        </div>
+
+        <div
+          class="lang-opt"
+          onclick="setLang('ja',this)">
+          🇯🇵 日本語
+        </div>
+
+        <div
+          class="lang-opt"
+          onclick="setLang('ru',this)">
+          🇷🇺 Русский
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</header>
+
+<!-- ══════════════════ TICKER ══════════════════ -->
+<div class="ticker-bar">
+
+  <div class="ticker-inner" id="tickerInner">
+
+    <span class="ticker-item">
+      Carregando cotações...
+    </span>
+
+  </div>
+
+</div>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main>
+
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:8px;
+    "
+  >
+
+    <div>
+
+      <div class="section-title">
+
+        🔥
+        <span id="nt-title">
+          Memecoins em Destaque
+        </span>
+
+      </div>
+
+      <div class="section-sub">
+
+        <span id="nt-sub">
+          Cotações e gráficos em tempo real
+        </span>
+
+        ·
+
+        <span class="live">
+
+          <span class="live-dot"></span>
+
+          <span id="liveText">
+            LIVE
+          </span>
+
+        </span>
+
+      </div>
+
+    </div>
+
+    <button
+      onclick="loadMemecoins()"
+      style="
+        background:var(--blue);
+        color:white;
+        border:none;
+        border-radius:50px;
+        padding:8px 18px;
+        font-family:'DM Sans',sans-serif;
+        font-size:0.82rem;
+        font-weight:600;
+        cursor:pointer;
+      "
+    >
+      ↻
+      <span id="nt-refresh">
+        Atualizar
+      </span>
+    </button>
+
+  </div>
+
+  <!-- MEME GRID -->
+  <div class="meme-grid" id="memeGrid">
+
+    <div class="loading-box">
+      Carregando...
+    </div>
+
+  </div>
+
+</main>
+
+<!-- ══════════════════ TOKEN MODAL ══════════════════ -->
+<div class="modal-overlay" id="tokenModal">
+
+  <div class="modal" id="modalBox">
+
+    <!-- HEAD -->
+    <div class="modal-head">
+
+      <img
+        class="modal-logo"
+        id="m-logo"
+        src=""
+        alt=""
+        onerror="this.style.display='none'"
+      />
+
+      <div>
+
+        <div
+          class="modal-name"
+          id="m-name">
+          —
+        </div>
+
+        <div
+          class="modal-sym"
+          id="m-sym">
+          —
+        </div>
+
+      </div>
+
+      <button
+        class="modal-close-btn"
+        onclick="closeModal()">
+        ✕
+      </button>
+
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+
+      <!-- PRICE -->
+      <div
+        style="
+          display:flex;
+          align-items:baseline;
+          gap:8px;
+          margin-bottom:14px;
+        "
+      >
+
+        <div
+          class="modal-price"
+          id="m-price">
+          —
+        </div>
+
+        <div
+          class="meme-chg"
+          id="m-chg">
+          —
+        </div>
+
+      </div>
+
+      <!-- STATS -->
+      <div class="modal-row">
+
+        <div class="modal-stat">
+          <label id="nt-vol">Vol 24h</label>
+          <value id="m-vol">—</value>
+        </div>
+
+        <div class="modal-stat">
+          <label id="nt-liq">Liquidez</label>
+          <value id="m-liq">—</value>
+        </div>
+
+        <div class="modal-stat">
+          <label id="nt-mc">Mkt Cap</label>
+          <value id="m-mc">—</value>
+        </div>
+
+      </div>
+
+      <!-- TABS -->
+      <div class="chart-tabs">
+
+        <button
+          class="chart-tab active"
+          onclick="switchTab(this,'15s')">
+          15s
+        </button>
+
+        <button
+          class="chart-tab"
+          onclick="switchTab(this,'1m')">
+          1m
+        </button>
+
+        <button
+          class="chart-tab"
+          onclick="switchTab(this,'5m')">
+          5m
+        </button>
+
+        <button
+          class="chart-tab"
+          onclick="switchTab(this,'1h')">
+          1h
+        </button>
+
+      </div>
+
+      <!-- CUSTOM CHART -->
+      <div class="custom-chart-wrap">
+
+        <canvas id="m-chart"></canvas>
+
+        <div
+          class="chart-loading"
+          id="chartLoading">
+          Loading chart...
+        </div>
+
+      </div>
+
+      <!-- CONTRACT -->
+      <div
+        class="modal-contract"
+        style="margin-top:16px"
+      >
+
+        <strong id="nt-contract">
+          Contrato
+        </strong>
+
+        <span id="m-addr">
+          —
+        </span>
+
+      </div>
+
+      <!-- SOCIAL -->
+      <div
+        class="modal-links"
+        id="m-links">
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ══════════════════ CHAT FAB ══════════════════ -->
+<button
+  class="chat-fab"
+  onclick="toggleChat()"
+  id="chatFab"
+  title="Assistente">
+
+  🤖
+
+  <span
+    class="fab-badge"
+    id="chatBadge">
+    1
+  </span>
+
+</button>
+
+<!-- ══════════════════ CHAT WINDOW ══════════════════ -->
+<div class="chat-window" id="chatWindow">
+
+  <div class="chat-head">
+
+    <div class="chat-head-avatar">
+      🤖
+    </div>
+
+    <div>
+
+      <div
+        class="chat-head-name"
+        id="botName">
+        CryptoBot
+      </div>
+
+      <div
+        class="chat-head-sub"
+        id="botSub">
+        Assistente CoinHatFeeds · online
+      </div>
+
+    </div>
+
+    <button
+      class="chat-head-close"
+      onclick="toggleChat()">
+      ✕
+    </button>
+
+  </div>
+
+  <div
+    class="chat-messages"
+    id="chatMessages">
+  </div>
+
+  <div
+    class="chat-suggestions"
+    id="chatSugs">
+  </div>
+
+  <div class="chat-input-row">
+
+    <input
+      class="chat-input"
+      id="chatInput"
+      placeholder="Pergunte sobre cripto..."
+      onkeydown="if(event.key==='Enter')sendChat()"
+    />
+
+    <button
+      class="chat-send"
+      onclick="sendChat()">
+      ➤
+    </button>
+
+  </div>
+
+</div>
+
+<!-- APP -->
+<script src="app.js"></script>
+
+</body>
+</html>
 
